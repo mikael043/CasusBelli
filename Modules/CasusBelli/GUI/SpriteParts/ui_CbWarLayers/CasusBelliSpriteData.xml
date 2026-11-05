@@ -2,7 +2,7 @@
 <SpriteData>
 	<SpriteCategories>
 		<SpriteCategory>
-			<Name>CbWarLayers</Name>
+			<Name>ui_CbWarLayers</Name>
 			<SpriteSheetCount>1</SpriteSheetCount>
 			<SpriteSheetSize ID='1' Width='722' Height='721'/>
 		</SpriteCategory>
