@@ -1,0 +1,5 @@
+<Config>
+    <SpriteCategory Name="ui_casus_belli">
+        <AlwaysLoad/>
+    </SpriteCategory>
+</Config>

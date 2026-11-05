@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<SpriteSheets>
+  <SpriteSheet Name="CbModIcons" ImageWidth="360" ImageHeight="360" CharacterSize="360">
+    <Sprites>
+      <!-- Registra o ID 'cb_war_shield_icon' mapeando a folha inteira -->
+      <Sprite Name="cb_war_shield_icon" PositionX="0" PositionY="0" Width="360" Height="360" />
+    </Sprites>
+  </SpriteSheet>
+</SpriteSheets>
