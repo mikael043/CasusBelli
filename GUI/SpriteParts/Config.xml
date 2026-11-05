@@ -1,5 +1,5 @@
 <Config>
-    <SpriteCategory Name="ui_casus_belli">
+    <SpriteCategory Name="CbWarLayers">
         <AlwaysLoad/>
     </SpriteCategory>
 </Config>
