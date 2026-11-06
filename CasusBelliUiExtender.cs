@@ -43,9 +43,23 @@ namespace CasusBelli
       <Children>
         <!-- PNG sprite registration is not available in this Bannerlord build;
              keep a built-in fallback visible until the asset is packed as DDS. -->
-        <Widget WidthSizePolicy=""StretchToParent""
-                HeightSizePolicy=""StretchToParent""
-                Sprite=""MapBar\monocular_icon"" />
+        <Widget WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        Sprite="ui_CbWarLayers\Espada" />
+
+        <Widget WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        Sprite="ui_CbWarLayers\Escudo-Esquerda"
+        Color="@LeftColor" />
+
+       <Widget WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        Sprite="ui_CbWarLayers\Escudo_Direita"
+        Color="@ShieldColor" />
+
+        <Widget WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        Sprite="ui_CbWarLayers\Escudo_Contorno" />
         <TextWidget WidthSizePolicy=""StretchToParent""
                     HeightSizePolicy=""Fixed"" SuggestedHeight=""22""
                     VerticalAlignment=""Bottom"" MarginBottom=""-18""
