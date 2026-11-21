@@ -31,7 +31,9 @@ namespace CasusBelli.Disputes
         {
             var ally = dispute.Sponsor(side).Clan;
             var rival = dispute.Sponsor(!side).Clan;
-            return 0.55f * dispute.Affinity(voter, side)
+            return .3f * (RealmPolitics.Controversy(rival.Leader) - RealmPolitics.Controversy(ally.Leader))
+                + (ally == dispute.Realm.RulingClan ? .25f * (RealmPolitics.Loyalty(voter.Leader,dispute.Realm) - 50) : 0)
+                + 0.55f * dispute.Affinity(voter, side)
                 + (SameCulture(voter, ally) ? 8 : 0) - (SameCulture(voter, rival) ? 8 : 0)
                 + 2 * (Standing(ally) - Standing(rival))
                 + (side ? 14 * attackerAdvantage - 4 : 4 - 14 * attackerAdvantage);

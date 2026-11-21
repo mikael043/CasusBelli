@@ -53,7 +53,10 @@ namespace CasusBelli
                 if (weekly)
                 {
                     CouncilDuties.Accounts(realm);
+                    RealmDiplomacy.Weekly(realm);
+                    Managers.Titles.TitlePetitions.Weekly(realm);
                     CouncilDuties.Intelligence(realm,_discoveries,live);
+                    CourtInvestigation.Weekly(realm);
                 }
                 if (realm.Leader == Hero.MainHero) continue;
                 foreach (var office in CouncilSelection.Offices)

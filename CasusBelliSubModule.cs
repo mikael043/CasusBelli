@@ -96,6 +96,8 @@ namespace CasusBelli
                 campaignStarter.AddBehavior(new RoyalCouncil());
                 campaignStarter.AddBehavior(new ArmySummonsBehavior());
                 campaignStarter.AddBehavior(new RealmPeers());
+                campaignStarter.AddBehavior(new RealmPolitics());
+                campaignStarter.AddBehavior(new RealmFactions());
                 campaignStarter.AddBehavior(new TitleDisputeBehavior());
 
                 // Captura do soberano, negociacao e rancor.

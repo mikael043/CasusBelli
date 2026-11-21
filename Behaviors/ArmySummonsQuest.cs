@@ -102,6 +102,10 @@ namespace CasusBelli
         {
             if (StillValid && MobileParty.MainParty.Army != SummoningArmy) Penalize();
         }
-        private void Penalize() => ChangeRelationAction.ApplyPlayerRelation(QuestGiver, -RelationPenalty);
+        private void Penalize()
+        {
+            RealmPolitics.Conduct(Hero.MainHero,QuestGiver.Clan?.Kingdom,-5,3);
+            ChangeRelationAction.ApplyPlayerRelation(QuestGiver, -RelationPenalty);
+        }
     }
 }

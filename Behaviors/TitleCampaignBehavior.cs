@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -21,6 +22,7 @@ namespace CasusBelli.Managers.Titles
             {
                 CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, starter => EnsureTitlesReady());
                 CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, starter => EnsureTitlesReady());
+                CampaignEvents.RulingClanChanged.AddNonSerializedListener(this, (realm, clan) => SyncCrown(realm));
                 CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
                 CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(
                     this, EnsureTitlesReady);
@@ -90,6 +92,7 @@ namespace CasusBelli.Managers.Titles
             {
                 if (!_initialized) return;
 
+                foreach (var realm in Kingdom.All) SyncCrown(realm);
                 // Tick de claims em todos os títulos
                 foreach (var title in TitleManager.Instance.AllTitles)
                 {
@@ -118,13 +121,13 @@ namespace CasusBelli.Managers.Titles
         {
             try
             {
-                foreach (var title in TitleManager.Instance.AllTitles)
+                var manager = TitleManager.Instance;
+                var crowns = Kingdom.All.Where(k => !k.IsEliminated).ToDictionary(k => k,k => manager.GetSovereignTitle(k));
+                foreach (var title in manager.AllTitles)
                 {
-                    var current = TitleManager.Instance.GetSovereignTitle(title.Fief?.OwnerClan?.Kingdom);
-                    if (current != null && title.Sovereign != current && title.Fief?.IsFortification == true)
-                    {
-                        title.TickDrift(current);
-                    }
+                    if (title.Fief?.IsFortification != true) continue;
+                    var realm = title.Fief.OwnerClan?.Kingdom;
+                    title.TickDrift(realm != null && crowns.TryGetValue(realm,out var crown) ? crown : null);
                 }
             }
             catch (Exception ex)
@@ -139,26 +142,24 @@ namespace CasusBelli.Managers.Titles
             {
                 if (victim == null) return;
 
-                // Herdar títulos
-                var heir = GetHeir(victim);
-                if (heir != null)
+                var manager = TitleManager.Instance;
+                int partition = 0;
+                foreach (var title in manager.GetAllDeJure(victim).OrderBy(t => t.TitleType).ThenBy(t => t.StringId,StringComparer.Ordinal))
                 {
-                    TitleManager.Instance.InheritAllTitles(victim, heir);
-                }
-                else
-                {
-                    // Sem herdeiro - títulos ficam vagos
-                    var titles = TitleManager.Instance.GetAllDeJure(victim);
-                    foreach (var title in titles)
-                    {
-                        TitleManager.Instance.ExecuteOwnershipChange(victim, null, title, true);
-                    }
+                    if (title.IsSovereignLevel) continue;
+                    var heir = FeudalRules.PersonalHeir(victim,title,partition);
+                    if (title.Contract?.Inheritance?.StringId == "gavelkind") partition++;
+                    manager.ExecuteOwnershipChange(victim,heir,title,true);
+                    if (title.deFacto == victim)
+                        manager.ExecuteOwnershipChange(victim,title.Fief == null ? heir : title.Fief.OwnerClan?.Leader,title,false);
                 }
 
                 // Remover claims do morto
                 foreach (var title in TitleManager.Instance.AllTitles)
                 {
                     title.RemoveClaim(victim);
+                    if (!title.IsSovereignLevel && title.deFacto == victim)
+                        manager.ExecuteOwnershipChange(victim,title.Fief?.OwnerClan?.Leader == victim ? null : title.Fief?.OwnerClan?.Leader,title,false);
                 }
             }
             catch (Exception ex)
@@ -167,40 +168,27 @@ namespace CasusBelli.Managers.Titles
             }
         }
 
-        private Hero GetHeir(Hero deadHero)
+        private static void SyncCrown(Kingdom realm)
         {
-            try
+            var manager = TitleManager.Instance;
+            if (realm == null || !manager.IsInitialized) return;
+            var crowns = manager.GetSovereignTitleList(realm);
+            if (realm.IsEliminated)
             {
-                if (deadHero.Clan == null) return null;
-
-                // Usar sucessão do título mais alto
-                var highestTitle = TitleManager.Instance.GetHighestTitle(deadHero);
-                if (highestTitle?.Contract?.Succession != null)
-                {
-                    var candidates = highestTitle.Contract.Succession.GetSuccessionCandidates(deadHero, highestTitle);
-                    var bestScore = float.MinValue;
-                    Hero bestCandidate = null;
-
-                    foreach (var candidate in candidates)
-                    {
-                        var score = TitleManager.Instance.GetModel().GetSuccessionHeirScore(deadHero, candidate, highestTitle, false);
-                        if (score.ResultNumber > bestScore)
-                        {
-                            bestScore = score.ResultNumber;
-                            bestCandidate = candidate;
-                        }
-                    }
-
-                    return bestCandidate;
-                }
-
-                // Fallback: líder do clã
-                return deadHero.Clan.Leader != deadHero ? deadHero.Clan.Leader : null;
+                foreach (var abandoned in crowns.Where(t => t.Active)) manager.DeactivateTitle(abandoned);
+                return;
             }
-            catch (Exception ex)
+            if (realm.Leader == null || !realm.Leader.IsAlive) return;
+            if (crowns.Count == 0 && realm.Fiefs.Count > 0)
             {
-                InformationManager.DisplayMessage(new InformationMessage($"[TitleSystem] Error in GetHeir: {ex.Message}"));
-                return null;
+                RoyalSeat.Move(realm);
+                TitleGenerator.CreateKingdom(realm.Leader,realm,TitleType.Kingdom,new System.Collections.Generic.List<FeudalTitle>(),
+                    TitleGenerator.GenerateContract("feudal"),realm.StringId + "_sovereign");
+            }
+            foreach (var crown in crowns)
+            {
+                if (crown.deJure != realm.Leader) manager.ExecuteOwnershipChange(crown.deJure,realm.Leader,crown,true);
+                if (crown.deFacto != realm.Leader) manager.ExecuteOwnershipChange(crown.deFacto,realm.Leader,crown,false);
             }
         }
 
@@ -216,19 +204,6 @@ namespace CasusBelli.Managers.Titles
                     TitleManager.Instance.GiveLordshipOnKingdomJoin(newKingdom, clan);
                 }
 
-                // Atualizar títulos do clã
-                foreach (var hero in clan.Heroes)
-                {
-                    var titles = TitleManager.Instance.GetAllDeJure(hero);
-                    foreach (var title in titles)
-                    {
-                        if (title.deJure == hero)
-                        {
-                            // Título permanece com o herói, mas reino mudou
-                            // Drift pode acontecer ao longo do tempo
-                        }
-                    }
-                }
             }
             catch (Exception ex)
             {

@@ -557,7 +557,7 @@ namespace CasusBelli
             double sum = result.Raids + result.Battles + result.Sieges +
                 result.Objective + result.Prisoners;
 
-            result.Total = war.CasusBelliType == CasusBelliCampaignBehavior.ClaimWarType &&
+            result.Total = war.IsTerritorial &&
                 result.AttackerHoldsEnemyKing && !result.DefenderHoldsEnemyKing ? 100 : Clamp(sum, -100.0, 100.0);
             return result;
         }
@@ -572,7 +572,7 @@ namespace CasusBelli
 
         private double ObjectivePoints(WarRecord war)
         {
-            if (war.CasusBelliType != CasusBelliCampaignBehavior.ClaimWarType ||
+            if (!war.IsTerritorial ||
                 war.ObjectiveAchievedOnDay < 0.0)
             {
                 return 0.0;
@@ -1351,7 +1351,7 @@ namespace CasusBelli
             Kingdom winner,
             Kingdom loser)
         {
-            if (war.CasusBelliType != CasusBelliCampaignBehavior.ClaimWarType ||
+            if (!war.IsTerritorial ||
                 war.AttackerKingdomId != winner.StringId)
             {
                 return null;
@@ -1377,6 +1377,24 @@ namespace CasusBelli
         }
 
         public string PreviewDemands(WarRecord war, Kingdom winner)
+        {
+            return PreviewSettlementTerms(war, winner) + CivilSettlementTerms(war, winner);
+        }
+
+        private static string CivilSettlementTerms(WarRecord war, Kingdom winner)
+        {
+            if (war == null || winner == null) return "";
+            var movement = RealmFactions.Current?.Find(winner);
+            if (movement?.Rebels == null ||
+                !((war.AttackerKingdomId == movement.Rebels.StringId && war.DefenderKingdomId == movement.Realm.StringId) ||
+                  (war.DefenderKingdomId == movement.Rebels.StringId && war.AttackerKingdomId == movement.Realm.StringId))) return "";
+            if (winner == movement.Realm) return " A Coroa mantém o poder e os clãs da liga regressam ao reino.";
+            if (movement.Demand == Disputes.CivilWar.Throne) return $" A casa de {movement.Pretender.Name} assume o trono e os clãs voltam a se reunir.";
+            if (movement.Demand == Disputes.CivilWar.Independence) return " A liga passa a ser um reino independente.";
+            return $" A Coroa concede {movement.Demand} e os clãs regressam ao reino.";
+        }
+
+        private string PreviewSettlementTerms(WarRecord war, Kingdom winner)
         {
             Kingdom loser = OtherSide(war, winner);
 
@@ -1475,6 +1493,7 @@ namespace CasusBelli
                     : "Paz imposta por " + winner.Name + ".";
             }
 
+            text += CivilSettlementTerms(war, winner);
             war.Outcome = winner.StringId == war.AttackerKingdomId ? "VICTORY" : "DEFENDER_VICTORY";
             MakePeaceAction.Apply(winner, loser);
             RaiseChanged();
@@ -1567,17 +1586,17 @@ namespace CasusBelli
             text.Append("GUERRA: " + viewer.Name + " x " +
                 (enemy != null ? enemy.Name.ToString() : "?") + "\n");
 
-            if (war.CasusBelliType == CasusBelliCampaignBehavior.ClaimWarType)
+            if (war.IsTerritorial)
             {
                 Settlement target = Settlement.Find(war.TargetSettlementId);
 
-                text.Append("Casus belli: reivindicacao" +
+                text.Append("Casus belli: " + war.Description +
                     (target != null ? " (alvo: " + target.Name + ")" : "") +
                     (viewerIsAttacker ? "" : " - voce e o defensor") + "\n");
             }
             else
             {
-                text.Append("Casus belli: nenhum\n");
+                text.Append("Casus belli: " + war.Description + "\n");
             }
 
             text.Append("Duracao: " + GetWarAgeDays(war).ToString("0") + " dias\n\n");
@@ -1593,7 +1612,7 @@ namespace CasusBelli
             text.Append(FactorLine("Saques", b.Raids * sign));
             text.Append(FactorLine("Cercos", b.Sieges * sign));
 
-            if (war.CasusBelliType == CasusBelliCampaignBehavior.ClaimWarType)
+            if (war.IsTerritorial)
             {
                 text.Append(FactorLine("Objetivo do casus belli", b.Objective * sign));
             }

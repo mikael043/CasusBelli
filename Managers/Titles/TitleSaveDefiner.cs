@@ -27,6 +27,7 @@ namespace CasusBelli.Managers.Titles
             AddClassDefinition(typeof(PeerVote), 14);
             AddClassDefinition(typeof(ArmySummonsQuest), 15);
             AddClassDefinition(typeof(SupportOffer), 12);
+            AddClassDefinition(typeof(PoliticalMovement), 16);
         }
 
         protected override void DefineEnumTypes()
@@ -50,6 +51,7 @@ namespace CasusBelli.Managers.Titles
             ConstructContainerDefinition(typeof(List<ContractDuty>));
             ConstructContainerDefinition(typeof(List<TitleDispute>));
             ConstructContainerDefinition(typeof(List<SupportOffer>));
+            ConstructContainerDefinition(typeof(List<PoliticalMovement>));
         }
     }
 }

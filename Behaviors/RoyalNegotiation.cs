@@ -48,7 +48,7 @@ namespace CasusBelli
                     captor.StringId,
                     captive.StringId,
                     out war) &&
-                war.CasusBelliType == CasusBelliCampaignBehavior.ClaimWarType &&
+                war.IsTerritorial &&
                 war.AttackerKingdomId == captor.StringId)
             {
                 target = Settlement.Find(war.TargetSettlementId);

@@ -12,7 +12,7 @@ namespace CasusBelli
     public sealed class RealmPeers : CampaignBehaviorBase
     {
         internal const int Cost = 250;
-        internal static RealmPeers Current => Campaign.Current?.GetCampaignBehavior<RealmPeers>();
+        internal static RealmPeers Current => Campaign.Current?.CampaignBehaviorManager == null ? null : Campaign.Current.GetCampaignBehavior<RealmPeers>();
         private List<string> _grants = new List<string>();
         private static string Key(Clan c) => c.Kingdom.StringId + "|" + c.StringId;
         internal void Grant(Clan c) { if (!_grants.Contains(Key(c))) _grants.Add(Key(c)); }

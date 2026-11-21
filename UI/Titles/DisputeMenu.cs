@@ -89,6 +89,8 @@ namespace CasusBelli.UI.Titles
                     choices.Add(new InquiryElement(offer, "Responder a " + sponsor.Name, null));
                 }
             }
+            if (Hero.MainHero == dispute.Realm.Leader && PersonalTitleWar.CanIntervene(dispute))
+                choices.Add(new InquiryElement("intervene","Impor paz por 60 dias · 30 de influência",null));
             if (choices.Count == 0)
             {
                 InformationManager.ShowInquiry(new InquiryData(dispute.Title.FullName.ToString(), text,
@@ -99,7 +101,8 @@ namespace CasusBelli.UI.Titles
             {
                 if (item is string command)
                 {
-                    if (command == "demand") PersonalTitleWar.Demand(dispute);
+                    if (command == "intervene") PersonalTitleWar.Intervene(dispute);
+                    else if (command == "demand") PersonalTitleWar.Demand(dispute);
                     else if (command == "surrender")
                     {
                         InformationManager.ShowInquiry(new InquiryData("Confirmar rendição", attacking ?

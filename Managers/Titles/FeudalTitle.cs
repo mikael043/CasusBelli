@@ -284,7 +284,8 @@ namespace CasusBelli.Managers.Titles
         // Drift de jure progressivo
         public void TickDrift(FeudalTitle current, float progress = 0.000793f)
         {
-            AddDrift(current, progress);
+            if (current != null && current != Sovereign) AddDrift(current, progress);
+            if (_deJureDrift.Count == 0) return;
             List<FeudalTitle> toRemove = null;
             foreach (var sovereign in _deJureDrift.Keys.ToList().Where(sovereign => sovereign != current))
             {
@@ -308,13 +309,13 @@ namespace CasusBelli.Managers.Titles
 
         private void AddDrift(FeudalTitle newSovereign, float progress)
         {
-            if (DeJureDrifts.ContainsKey(newSovereign))
+            if (_deJureDrift.ContainsKey(newSovereign))
             {
                 _deJureDrift[newSovereign] += progress;
             }
             else
             {
-                _deJureDrift.Add(newSovereign, 0f);
+                _deJureDrift.Add(newSovereign, progress);
             }
 
             switch (_deJureDrift[newSovereign])
@@ -439,13 +440,8 @@ namespace CasusBelli.Managers.Titles
                     newSovereign.Vassals.Add(this);
                 }
 
-                if (newSovereign.Contract != null)
-                {
-                    ChangeContract(newSovereign.Contract.Government);
-                    ChangeContract(newSovereign.Contract.Succession);
-                    ChangeContract(newSovereign.Contract.Inheritance);
-                    ChangeContract(newSovereign.Contract.GenderLaw);
-                }
+                // Territorial jurisdiction moves independently of personal succession law.
+                _deJureDrift.Clear();
 
                 if (notify && newSovereign != null && FullName != null)
                 {

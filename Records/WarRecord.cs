@@ -10,6 +10,9 @@ namespace CasusBelli
 
         public string CasusBelliType { get; set; }
 
+        public string Description => CasusBelliType switch { "CLAIM" => "Reivindicação", "RECONQUEST" => "Reconquista", "SUCCESSION" => "Sucessão", "REBELLION" => "Rebelião", "INDEPENDENCE" => "Independência", "DEFENSE" => "Defesa de um aliado", _ => "Guerra sem pretexto" };
+        public bool IsTerritorial => CasusBelliType == "CLAIM" || CasusBelliType == "RECONQUEST";
+
         public string TargetSettlementId { get; set; }
 
         public double ArmisticeStarted { get; set; } = -1;

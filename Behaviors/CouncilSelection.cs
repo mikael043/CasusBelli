@@ -18,8 +18,10 @@ namespace CasusBelli
         {
             var house = realm.RulingClan;
             var peers = realm.Clans.Where(c => c != house && RealmPeers.Rank(c) > 0);
+            var seat = RoyalSeat.Get(realm);
             return house.Heroes.Concat(house.Companions).Concat(peers.Select(c => c.Leader))
                 .Concat(house.Fiefs.Where(t => t.Settlement.IsTown).SelectMany(t => t.Settlement.Notables))
+                .Concat(seat == null ? Enumerable.Empty<Hero>() : seat.Notables)
                 .Where(h => h != null && h != realm.Leader && h.IsAlive && !h.IsChild && !h.IsPrisoner &&
                     !h.IsDisabled && h.GetRelation(realm.Leader) > -30).Distinct().ToList();
         }
@@ -60,7 +62,7 @@ namespace CasusBelli
                     profile = h.IsGangLeader || h.IsWanderer ? 6 : 0;
                     break;
             }
-            return skill + profile + .05f * h.GetRelation(realm.Leader);
+            return skill + profile + (RealmPolitics.Loyalty(h,realm)-50) * .15f - RealmPolitics.Controversy(h) * .3f + .05f * h.GetRelation(realm.Leader);
         }
     }
 }

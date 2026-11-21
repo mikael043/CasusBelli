@@ -518,7 +518,15 @@ namespace CasusBelli
                         MakePeaceAction.Apply(first, second);
                     return;
                 }
-                if (pairKey == null || !_eligiblePairs.Contains(pairKey))
+                if (faction1 is Kingdom && faction2 is Kingdom && IsTruceActive(faction1.StringId,faction2.StringId) && RealmDiplomacy.PactDays(faction1.StringId,faction2.StringId) == 0 &&
+                    faction1 is Kingdom truceBreaker && faction2 is Kingdom)
+                {
+                    RealmPolitics.Shift(truceBreaker,-6);
+                    RealmPolitics.Conduct(truceBreaker.Leader,truceBreaker,0,12);
+                }
+                RealmDiplomacy.Breach(faction1 as Kingdom,faction2 as Kingdom);
+                bool rebellion = detail == DeclareWarAction.DeclareWarDetail.CausedByRebellion || detail == DeclareWarAction.DeclareWarDetail.CausedByClaimOnThrone;
+                if (pairKey == null || (!rebellion && !_eligiblePairs.Contains(pairKey) && !faction1.IsAtWarWith(faction2)))
                 {
                     return;
                 }
@@ -534,7 +542,9 @@ namespace CasusBelli
                 string claimId = "";
                 FeudalTitle bestClaim;
                 Settlement bestSettlement;
-                if (_pendingClaimWar != null && _pendingClaimWar.AttackerKingdomId == kingdom.StringId && _pendingClaimWar.DefenderKingdomId == kingdom2.StringId)
+                if (detail == DeclareWarAction.DeclareWarDetail.CausedByCallToWarAgreement) text = "DEFENSE";
+                else if (rebellion) text = detail == DeclareWarAction.DeclareWarDetail.CausedByClaimOnThrone ? "SUCCESSION" : "REBELLION";
+                else if (_pendingClaimWar != null && _pendingClaimWar.AttackerKingdomId == kingdom.StringId && _pendingClaimWar.DefenderKingdomId == kingdom2.StringId)
                 {
                     text = "CLAIM";
                     targetSettlementId = _pendingClaimWar.SettlementId ?? "";
@@ -546,6 +556,8 @@ namespace CasusBelli
                     targetSettlementId = bestSettlement.StringId;
                     claimId = bestClaim.StringId;
                 }
+                if (rebellion && RealmFactions.Current?.Find(kingdom)?.Demand == Disputes.CivilWar.Independence) text = "INDEPENDENCE";
+                if (text == "CLAIM" && TitleManager.Instance.GetTitleByStringId(claimId)?.deJure?.Clan?.Kingdom == kingdom) text = "RECONQUEST";
                 WarRecord war = new WarRecord
                 {
                     WarId = "CB_WAR_" + _nextWarSequence,
@@ -562,8 +574,11 @@ namespace CasusBelli
                     _nextWarSequence++;
                     if (text == "UNASSIGNED")
                     {
+                        RealmPolitics.Conduct(kingdom.Leader,kingdom,0,4);
                         ApplyUnassignedWarPenalty(kingdom);
                     }
+                    if (!rebellion && detail != DeclareWarAction.DeclareWarDetail.CausedByCallToWarAgreement)
+                        RealmDiplomacy.CallDefenders(kingdom,kingdom2);
                 }
             }
             catch (Exception ex)

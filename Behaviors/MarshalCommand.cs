@@ -28,7 +28,7 @@ namespace CasusBelli
         internal static bool MayCall(Kingdom realm, Hero commander, MobileParty party)
         {
             if (realm == null) return true;
-            if (!MayMuster(realm, commander)) return false;
+            if (!MayMuster(realm, commander) || party?.LeaderHero?.Clan?.Kingdom != realm) return false;
             if (RealmCommand(realm, commander) || party?.LeaderHero == commander) return true;
             var noble = party?.LeaderHero;
             if (noble == null || !noble.IsLord || noble.Clan?.Kingdom != realm) return false;

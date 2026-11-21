@@ -16,6 +16,8 @@ namespace CasusBelli.Disputes
         internal static string DemandBlock(TitleDispute dispute)
         {
             if (!dispute.CanDemand) return "A reivindicação precisa estar madura.";
+            if (RealmPolitics.Authority(dispute.Realm) >= 75 && dispute.Claimant != dispute.Realm.Leader)
+                return "A autoridade da Coroa (75 ou mais) proíbe ultimatos privados.";
             if (dispute.TruceEnds.IsFuture) return $"Trégua por mais {System.Math.Ceiling(dispute.TruceEnds.RemainingDaysFromNow)} dias.";
             if (!dispute.Offers.Any(o => o.Accepted && o.ForClaimant && dispute.Eligible(o.Recipient)))
                 return "É preciso o apoio confirmado de outro clã do reino.";
@@ -49,7 +51,7 @@ namespace CasusBelli.Disputes
                 {
                     dispute.MediationAttempted = true;
                     int trust = Math.Min(envoy.GetRelation(dispute.Claimant), envoy.GetRelation(dispute.Holder));
-                    if (MBRandom.RandomFloat < Math.Max(0,Math.Min(.8f,.15f + envoy.GetSkillValue(DefaultSkills.Charm)/500f + trust/300f)))
+                    if (MBRandom.RandomFloat < Math.Max(0,Math.Min(.8f,RealmPolitics.Authority(dispute.Realm) / 300f + envoy.GetSkillValue(DefaultSkills.Charm)/500f + trust/300f)))
                     {
                         void Mediate()
                         {
@@ -67,6 +69,20 @@ namespace CasusBelli.Disputes
                 }
                 BeginConflict(dispute);
             }
+        }
+
+        internal static bool CanIntervene(TitleDispute d) => d.IsActive && d.Demanded && d.Realm.Leader != d.Holder &&
+            d.Realm.Leader != d.Claimant && RealmPolitics.Authority(d.Realm) >= 60 && d.Realm.RulingClan.Influence >= 30;
+        internal static void Intervene(TitleDispute d)
+        {
+            if (!CanIntervene(d)) return;
+            ChangeClanInfluenceAction.Apply(d.Realm.RulingClan,-30);
+            d.Contested = d.Demanded = false;
+            d.PeaceProposer = null;
+            d.Offers.Clear();
+            d.Balance = 0;
+            d.TruceEnds = CampaignTime.DaysFromNow(60);
+            Report(d,"O soberano impôs 60 dias de paz. O titular conserva o feudo e a reivindicação permanece válida.");
         }
 
         private static void BeginConflict(TitleDispute dispute)
@@ -106,6 +122,8 @@ namespace CasusBelli.Disputes
                 Reply(dispute, attack > 0 && DisputeAi.Yield(dispute, DisputeAi.Advantage(attack, defense)));
                 return;
             }
+            if (dispute.Realm.Leader != Hero.MainHero && CanIntervene(dispute) && dispute.Realm.FactionsAtWarWith.Any() && MBRandom.RandomFloat < .08f)
+            { Intervene(dispute); return; }
             PersonalPeace.Tick(dispute);
             if (!dispute.Contested || !dispute.IsActive) return;
             // One abstract engagement per day, weighted by the pledged clans' field troops.

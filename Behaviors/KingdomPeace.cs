@@ -6,7 +6,7 @@ namespace CasusBelli
     public partial class CasusBelliWarScoreBehavior
     {
         private static bool AttackerClaim(WarRecord war, Kingdom winner) =>
-            war.AttackerKingdomId == winner.StringId && war.CasusBelliType == CasusBelliCampaignBehavior.ClaimWarType;
+            war.AttackerKingdomId == winner.StringId && war.IsTerritorial;
 
         public bool CanSurrender(WarRecord war, Kingdom kingdom, out string reason)
         {
@@ -22,7 +22,7 @@ namespace CasusBelli
         private double AcceptanceThreshold(WarRecord war, Kingdom recipient)
         {
             double threshold = 90 - Math.Min(25, GetWarAgeDays(war) / 4) - 5 * (Eagerness(recipient) - 1);
-            if (war.CasusBelliType == CasusBelliCampaignBehavior.ClaimWarType &&
+            if (war.IsTerritorial &&
                 !string.IsNullOrEmpty(war.TargetSettlementId))
             {
                 var target = TaleWorlds.CampaignSystem.Settlements.Settlement.Find(war.TargetSettlementId);

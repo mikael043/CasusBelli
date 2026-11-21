@@ -78,6 +78,10 @@ namespace CasusBelli
             }
 
             factor *= profile.AiWarChanceMultiplier;
+            if (attacker.StringId == "empire" && evaluatingClan != null && evaluatingClan != attacker.RulingClan) factor *= .8f;
+            if (attacker.StringId == "empire_s" && RealmPolitics.Authority(attacker) < 60) factor *= .7f;
+            if (attacker.StringId == "empire_w" && attacker.Armies.Count > 0) factor *= 1.2f;
+            if (attacker.StringId == "nord") factor *= behavior.HasUsableClaimAgainst(attacker,defender) ? 1.25f : .8f;
             factor *= KingTemperament.WarChanceMultiplier(attacker.Leader);
 
             CasusBelliKingBehavior kings =

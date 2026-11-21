@@ -230,7 +230,7 @@ namespace CasusBelli.Managers.Titles
                     DefaultInheritances.Instance.Primogeniture,
                     DefaultGenderLaws.Instance.Agnatic),
                 "imperial" => new FeudalContract(
-                     DefaultGovernments.Instance.Feudal, DefaultSuccessions.Instance.FeudalElective,
+                     DefaultGovernments.Instance.Imperial, DefaultSuccessions.Instance.FeudalElective,
                      DefaultInheritances.Instance.Primogeniture,
                      DefaultGenderLaws.Instance.Agnatic),
                 "tribal" => new FeudalContract(

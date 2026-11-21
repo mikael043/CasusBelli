@@ -320,7 +320,7 @@ namespace CasusBelli
                 }
                 if (!IsPlayerSovereignOf(captor) && GetMain() != null &&
                     GetMain().TryGetActiveWarBetween(captor.StringId, kingdom.StringId, out var war) &&
-                    war.CasusBelliType == CasusBelliCampaignBehavior.ClaimWarType && war.AttackerKingdomId == captor.StringId)
+                    war.IsTerritorial && war.AttackerKingdomId == captor.StringId)
                 {
                     if (ExecuteOffer(record, NegotiationOfferType.Objective, out var result) &&
                         (IsPlayerKingdom(captor) || IsPlayerKingdom(kingdom))) ShowMessage(result);

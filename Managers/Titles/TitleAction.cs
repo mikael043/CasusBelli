@@ -124,9 +124,14 @@ namespace CasusBelli.Managers.Titles
                     TitleGenerator.FoundKingdom(this);
                     break;
                 case ActionType.Grant:
+                    if (manager.GetModel().GetGrantAction(Title,ActionTaker,receiver).Possible) manager.GrantTitle(this, receiver);
+                    break;
                 case ActionType.Destroy:
-                default:
-                    manager.GrantTitle(this, receiver);
+                    var check = manager.GetModel().GetDestroyAction(Title,ActionTaker);
+                    if (!check.Possible) return;
+                    ActionTaker.Clan.Influence -= check.Influence;
+                    ActionTaker.Clan.Renown -= check.Renown;
+                    manager.DeactivateTitle(Title);
                     break;
             }
         }

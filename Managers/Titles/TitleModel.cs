@@ -96,7 +96,7 @@ namespace CasusBelli.Managers.Titles
             if (title.IsSovereignLevel)
             {
                 action.Possible = false;
-                action.Reason = new TextObject("{=BKSovereignTitle}Cannot usurp sovereign titles directly.");
+                action.Reason = new TextObject("Uma pretensão à Coroa deve ser disputada na sucessão.");
                 return action;
             }
 
@@ -108,10 +108,15 @@ namespace CasusBelli.Managers.Titles
             var suzerain = TitleManager.Instance.GetImmediateSuzerain(title);
             bool sameRealm = suzerain != null && suzerain.deJure != null && suzerain.deJure.Clan?.Kingdom == taker.Clan?.Kingdom;
 
+            if (title.deJure?.Clan == null || taker.Clan == null || (title.Fief != null && !holdsLand))
+            {
+                action.Reason = new TextObject("É preciso controlar o feudo. Uma reivindicação sobre terras alheias pode ser exigida por ultimato ou guerra.");
+                return action;
+            }
             if (!hasValidClaim && !holdsLand)
             {
                 action.Possible = false;
-                action.Reason = new TextObject("{=BKNoClaimOrLand}You need a valid claim or to hold the title's lands.");
+                action.Reason = new TextObject("É preciso um direito reconhecido ou o controle do território.");
                 return action;
             }
 
@@ -119,7 +124,7 @@ namespace CasusBelli.Managers.Titles
             if (sameRealm && !hasValidClaim)
             {
                 action.Possible = false;
-                action.Reason = new TextObject("{=BKNeedMatureClaim}Within the realm, you need a matured claim to usurp.");
+                action.Reason = new TextObject("Dentro do reino é preciso ter uma reivindicação madura para usurpar.");
                 return action;
             }
 
@@ -209,12 +214,17 @@ namespace CasusBelli.Managers.Titles
                 return action;
             }
 
+            if (title.deJure?.Clan?.Kingdom == null || title.deJure == taker || taker.Clan?.Kingdom != title.deJure.Clan.Kingdom || RealmPolitics.Authority(taker.Clan.Kingdom) < 45)
+            {
+                action.Reason = new TextObject("A revogação exige um vassalo do reino e autoridade de pelo menos 45.");
+                return action;
+            }
             // Só pode revogar se for o suserano
             var suzerain = TitleManager.Instance.GetImmediateSuzerain(title);
             if (suzerain == null || suzerain.deJure != taker)
             {
                 action.Possible = false;
-                action.Reason = new TextObject("{=BKNotSuzerain}You are not the liege of this title.");
+                action.Reason = new TextObject("Somente o suserano imediato pode revogar este título.");
                 return action;
             }
 
@@ -222,7 +232,7 @@ namespace CasusBelli.Managers.Titles
             if (title.IsSovereignLevel)
             {
                 action.Possible = false;
-                action.Reason = new TextObject("{=BKSovereignTitle}Cannot revoke sovereign titles.");
+                action.Reason = new TextObject("O título soberano é decidido na sucessão da Coroa.");
                 return action;
             }
 
@@ -233,6 +243,7 @@ namespace CasusBelli.Managers.Titles
             action.Reason = new TextObject("{=BKRevokeTitle}Revoke {TITLE} from {VASSAL}.")
                 .SetTextVariable("TITLE", title.FullName)
                 .SetTextVariable("VASSAL", title.deJure.Name);
+            CheckTitleCosts(action);
 
             return action;
         }
@@ -305,7 +316,7 @@ namespace CasusBelli.Managers.Titles
             }
 
             // Verificar se receiver é vassalo ou pode se tornar
-            if (receiver.Clan.Kingdom != taker.Clan.Kingdom && !receiver.Clan.IsUnderMercenaryService)
+            if (taker.Clan?.Kingdom == null || receiver.Clan?.Kingdom != taker.Clan.Kingdom || receiver.Clan.IsUnderMercenaryService || !receiver.IsAlive || title.IsSovereignLevel)
             {
                 action.Possible = false;
                 action.Reason = new TextObject("{=BKNotInRealm}Recipient must be in your realm.");
@@ -319,6 +330,7 @@ namespace CasusBelli.Managers.Titles
             action.Reason = new TextObject("{=BKGrantTitle}Grant {TITLE} to {RECEIVER}.")
                 .SetTextVariable("TITLE", title.FullName)
                 .SetTextVariable("RECEIVER", receiver.Name);
+            CheckTitleCosts(action);
 
             return action;
         }
@@ -365,6 +377,7 @@ namespace CasusBelli.Managers.Titles
             action.Possible = true;
             action.Reason = new TextObject("{=BKDestroyTitle}Destroy the title of {TITLE}.")
                 .SetTextVariable("TITLE", title.FullName);
+            CheckTitleCosts(action);
 
             return action;
         }
@@ -616,6 +629,7 @@ namespace CasusBelli.Managers.Titles
 
             if (succession.IsElective)
             {
+                explained.Add((RealmPolitics.Loyalty(candidate,candidate.Clan?.Kingdom) - 50) * .1f - RealmPolitics.Controversy(candidate) * .3f,new TextObject("Reputação política"));
                 // Sucessão eletiva: influência, relação com vassalos
                 explained.Add(candidate.Clan.Influence * 0.01f, new TextObject("{=BKInfluence}Clan Influence"));
 

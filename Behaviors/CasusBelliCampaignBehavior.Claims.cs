@@ -177,6 +177,7 @@ namespace CasusBelli
 
         public bool IsTruceActive(string kingdomId1, string kingdomId2)
         {
+            if (RealmPolitics.Current != null && RealmDiplomacy.PactDays(kingdomId1,kingdomId2) > 0) return true;
             if (TryGetActiveWarBetween(kingdomId1, kingdomId2, out var ongoing) && ongoing.ArmisticeEnds >= 0)
                 return true;
             double lastEnded = -1.0;
@@ -206,6 +207,7 @@ namespace CasusBelli
 
         private double GetTruceDaysLeft(string kingdomId1, string kingdomId2)
         {
+            if (RealmPolitics.Current != null && RealmDiplomacy.PactDays(kingdomId1,kingdomId2) > 0) return RealmDiplomacy.PactDays(kingdomId1,kingdomId2);
             if (TryGetActiveWarBetween(kingdomId1, kingdomId2, out var ongoing) && ongoing.ArmisticeEnds >= 0)
                 return Math.Max(0, ongoing.ArmisticeEnds - CampaignTime.Now.ToDays);
             double lastEnded = -1.0;
@@ -383,7 +385,7 @@ namespace CasusBelli
             war.EndedOnDay = CampaignTime.Now.ToDays;
             if (!string.IsNullOrEmpty(war.Outcome)) return;
 
-            if (war.CasusBelliType == ClaimWarCasusBelliType)
+            if (war.IsTerritorial)
             {
                 war.Outcome = war.ObjectiveAchievedOnDay >= 0.0
                     ? "VICTORY"
@@ -410,7 +412,7 @@ namespace CasusBelli
             foreach (WarRecord war in _warRegistry.AllWars)
             {
                 if (!war.IsActive ||
-                    war.CasusBelliType != ClaimWarCasusBelliType ||
+                    !war.IsTerritorial ||
                     war.TargetSettlementId != settlement.StringId ||
                     war.AttackerKingdomId != newKingdomId ||
                     war.ObjectiveAchievedOnDay >= 0.0)
@@ -534,11 +536,15 @@ namespace CasusBelli
             var ruler = kingdom.Leader;
             var manager = TitleManager.Instance;
             if (ruler == null || manager.AllTitles.Any(t => t.OngoingClaims.ContainsKey(ruler))) return;
-            var targets = manager.AllTitles.Where(t => t.Fief?.IsFortification == true &&
+            var neighbors = Campaign.Current.GetCampaignBehavior<CasusBelliWarScoreBehavior>();
+            var frontier = new HashSet<Settlement>(kingdom.Fiefs.SelectMany(t => neighbors.Neighbors(t.Settlement)));
+            var targets = manager.AllTitles.Where(t => t.deJure?.IsAlive == true && t.Fief?.IsFortification == true && frontier.Contains(t.Fief) &&
                 t.Fief.OwnerClan?.Kingdom != null && t.Fief.OwnerClan.Kingdom != kingdom &&
                 !HasTitleRight(kingdom, t)).ToList();
             if (targets.Count == 0) return;
-            var action = manager.GetModel().GetClaimAction(targets[MBRandom.RandomInt(targets.Count)], ruler);
+            var target = targets.OrderByDescending(t => t.Fief.Culture == kingdom.Culture).ThenByDescending(t => t.Fief.IsTown)
+                .ThenBy(t => ruler.GetRelation(t.deJure)).First();
+            var action = manager.GetModel().GetClaimAction(target, ruler);
             if (action.Possible && action.IsWilling) action.TakeAction(null);
         }
 

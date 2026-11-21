@@ -175,10 +175,26 @@
     <Compile Include="Behaviors\WarArmistice.cs" />
     <Compile Include="Behaviors\RaidConsequences.cs" />
     <Compile Include="Behaviors\RoyalCouncil.cs" />
+    <Compile Include="Managers\Titles\FeudalRules.cs" />
     <Compile Include="Behaviors\CouncilSelection.cs" />
     <Compile Include="UI\Titles\RoyalCouncilMenu.cs" />
     <Compile Include="Behaviors\MarshalCommand.cs" />
     <Compile Include="Behaviors\ArmySummonsQuest.cs" />
+    <Compile Include="Behaviors\CouncilDuties.cs" />
+    <Compile Include="Harmony\RealmBallots.cs" />
+    <Compile Include="Behaviors\RealmFactions.cs" />
+    <Compile Include="Managers\Disputes\CivilWar.cs" />
+    <Compile Include="Managers\Disputes\PoliticalMovement.cs" />
+    <Compile Include="Managers\RealmDiplomacy.cs" />
+    <Compile Include="UI\Titles\PoliticsMenu.cs" />
+    <Compile Include="Managers\Titles\TitlePetitions.cs" />
+    <Compile Include="UI\Titles\FeudalActionsMenu.cs" />
+    <Compile Include="Harmony\PoliticalObligations.cs" />
+    <Compile Include="Commands\PoliticsCommands.cs" />
+    <Compile Include="Managers\RoyalSeat.cs" />
+    <Compile Include="Behaviors\CourtInvestigation.cs" />
+    <Compile Include="Managers\RealmLaw.cs" />
+    <Compile Include="Behaviors\RealmPolitics.cs" />
     <Compile Include="Behaviors\RealmPeers.cs" />
     <Compile Include="Behaviors\PeerageDecision.cs" />
     <Compile Include="Behaviors\RoyalSettlement.cs" />
@@ -241,7 +257,7 @@
     <Content Include="GUI\Prefabs\Items\TitleElement.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="SubModule.xml" />
+    <Content Include="Modules\CasusBelli\SubModule.xml" />
     <Content Include="Modules\CasusBelli\ModuleData\titles.xml" />
   </ItemGroup>
   <ItemGroup>

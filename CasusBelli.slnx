@@ -1,0 +1,13 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Folder Name="/Itens de Solução/">
+    <File Path="CasusBelli/CasusBelliUiExtender.cs" />
+    <File Path="CasusBelli/CBWarIcon.xml" />
+  </Folder>
+  <Project Path="CasusBelli/CasusBelli.csproj" Id="d154b9d0-d101-4842-a26c-f9a054174ae5">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
+</Solution>

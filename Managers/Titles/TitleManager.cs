@@ -152,7 +152,7 @@ namespace CasusBelli.Managers.Titles
                     try
                     {
                         if (title?.Contract != null && (title.Contract.DemesneLaws == null || title.Contract.DemesneLaws.Count == 0))
-                            title.SetLaws(DefaultDemesneLaws.Instance.GetAdequateLaws(title));
+                            title.Contract.SetLaws(DefaultDemesneLaws.Instance.GetAdequateLaws(title));
 
                         title?.PostInitialize();
 
@@ -600,7 +600,7 @@ namespace CasusBelli.Managers.Titles
 
         public void InheritTitle(Hero oldOwner, Hero heir, FeudalTitle title)
         {
-            if (IsHeroTitleHolder(oldOwner))
+            if (oldOwner != null)
             {
                 if (title.deJure == oldOwner)
                 {
@@ -676,6 +676,11 @@ namespace CasusBelli.Managers.Titles
         public void RevokeTitle(TitleAction action)
         {
             var currentOwner = action.Title.deJure;
+            if (action.Title.GetHeroClaim(action.ActionTaker) == ClaimType.None)
+            {
+                RealmPolitics.Conduct(action.ActionTaker,action.ActionTaker.Clan?.Kingdom,0,10);
+                RealmPolitics.Shift(action.ActionTaker.Clan?.Kingdom,-4);
+            }
             InformationManager.DisplayMessage(new InformationMessage(
                 new TextObject("{=D50E4DZk}{REVOKER} has revoked the {TITLE}.")
                     .SetTextVariable("REVOKER", action.ActionTaker.EncyclopediaLinkWithName)
@@ -727,7 +732,7 @@ namespace CasusBelli.Managers.Titles
 
             ExecuteOwnershipChange(grantor, receiver, action.Title, true);
             var kingdom = grantor.Clan.Kingdom;
-            if (receiver.Clan.Kingdom != null && receiver.Clan.Kingdom == kingdom)
+            if (action.Title.Fief == null && receiver.Clan.Kingdom != null && receiver.Clan.Kingdom == kingdom)
             {
                 ExecuteOwnershipChange(grantor, receiver, action.Title, false);
             }
@@ -735,14 +740,14 @@ namespace CasusBelli.Managers.Titles
             var relationChange = GetModel().GetRelationImpact(action.Title);
 
             ChangeRelationAction.ApplyRelationChangeBetweenHeroes(grantor, receiver, -relationChange);
-            GainKingdomInfluenceAction.ApplyForDefault(grantor, action.Influence);
+            GainKingdomInfluenceAction.ApplyForDefault(grantor, -action.Influence);
             grantor.AddSkillXp(DefaultSkills.Leadership,
                 GetModel().GetSkillReward(action.Title.TitleType, action.Type));
 
-            GainRenownAction.Apply(grantor, action.Renown);
+            GainRenownAction.Apply(grantor, -action.Renown);
 
             var fief = action.Title.Fief;
-            if (receiver.Clan.Leader == receiver && fief != null && (fief.IsTown || fief.IsCastle))
+            if (receiver.Clan.Leader == receiver && fief?.OwnerClan == grantor.Clan && fief != null && (fief.IsTown || fief.IsCastle))
             {
                 ChangeOwnerOfSettlementAction.ApplyByGift(fief, receiver);
             }
@@ -1221,7 +1226,6 @@ namespace CasusBelli.Managers.Titles
 
         public FeudalTitle GetDuchy(FeudalTitle title)
         {
-            var duchies = _titles.Where(x => x.TitleType == TitleType.Dukedom && x.Sovereign != null && x.Sovereign == title.Sovereign);
 
             var suzerain1 = GetImmediateSuzerain(title);
             if (suzerain1 == null)
@@ -1312,27 +1316,31 @@ namespace CasusBelli.Managers.Titles
             var doc = new XmlDocument { XmlResolver = null };
             doc.Load(path);
             var root = doc.SelectSingleNode("//titles") ?? throw new InvalidDataException("Elemento titles ausente.");
+            FeudalRules.Validate(root);
             foreach (XmlElement node in root.SelectNodes("kingdom"))
             {
                 var kingdom = Kingdom.All.FirstOrDefault(k => k.StringId == node.GetAttribute("faction"));
                 if (kingdom?.Leader == null) continue;
-                string government = node.GetAttribute("government");
-                var contract = TitleGenerator.GenerateContract(government == "tribal" ? "clan" : government,
-                    node.GetAttribute("succession"), node.GetAttribute("inheritance"), node.GetAttribute("genderLaw"));
+                string government = FeudalRules.LawId(node.GetAttribute("government"));
+                string inheritance = FeudalRules.LawId(node.GetAttribute("inheritance"));
+                string gender = FeudalRules.LawId(node.GetAttribute("genderLaw"));
+                var contract = TitleGenerator.GenerateContract(government,FeudalRules.SuccessionId(node.GetAttribute("succession")),inheritance,gender);
+                var personal = TitleGenerator.GenerateContract(government,"hereditary",inheritance,gender);
                 var sovereign = GetSovereignTitle(kingdom) ?? TitleGenerator.CreateKingdom(
                     GetHeroById(node.GetAttribute("deJure")) ?? kingdom.Leader, kingdom, TitleType.Kingdom,
                     new List<FeudalTitle>(), contract, kingdom.StringId + "_sovereign");
                 if (sovereign == null) continue;
                 foreach (XmlElement duchy in node.SelectNodes("duchy"))
-                    LoadTitleHierarchy(duchy, sovereign, sovereign);
+                    LoadTitleHierarchy(duchy, sovereign, sovereign,personal);
             }
             return string.Equals(root.Attributes["autoGenerate"]?.Value, "true", StringComparison.OrdinalIgnoreCase);
         }
 
-        private void LoadTitleHierarchy(XmlElement node, FeudalTitle parent, FeudalTitle sovereign)
+        private void LoadTitleHierarchy(XmlElement node, FeudalTitle parent, FeudalTitle sovereign, FeudalContract parentContract)
         {
             FeudalTitle title;
             var holder = GetHeroById(node.GetAttribute("deJure"));
+            var contract = FeudalRules.Contract(node,parentContract);
             if (node.Name == "duchy")
             {
                 string name = node.GetAttribute("name");
@@ -1341,7 +1349,7 @@ namespace CasusBelli.Managers.Titles
                 if (title == null)
                 {
                     title = new FeudalTitle(TitleType.Dukedom, null, null, holder ?? parent.deJure,
-                        holder ?? parent.deJure, new TextObject(name), parent.Contract, id);
+                        holder ?? parent.deJure, new TextObject(name), contract, id);
                     ExecuteAddTitle(title);
                 }
             }
@@ -1354,13 +1362,13 @@ namespace CasusBelli.Managers.Titles
                     return;
                 }
                 title = GetTitle(fief) ?? TitleGenerator.CreateLandedTitle(fief, holder ?? fief.Owner,
-                    node.Name == "county" ? TitleType.County : TitleType.Barony, parent.Contract);
+                    node.Name == "county" ? TitleType.County : TitleType.Barony, contract);
             }
             if (title == null) return;
             if (!parent.Vassals.Contains(title)) parent.Vassals.Add(title);
             title.SetSovereign(sovereign);
             foreach (XmlElement child in node.SelectNodes("county|barony"))
-                LoadTitleHierarchy(child, title, sovereign);
+                LoadTitleHierarchy(child, title, sovereign,title.Contract);
         }
 
         private Hero GetHeroById(string heroId)

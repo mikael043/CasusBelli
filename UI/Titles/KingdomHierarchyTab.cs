@@ -73,6 +73,7 @@ namespace CasusBelli.UI.Titles
             Section("CbHierarchy", "Hierarquia", OpenHierarchy);
             Section("CbPeers", "Pares do reino", k => RealmPeers.Show(k, () => { }));
             Section("CbCouncil", "Conselho", k => RoyalCouncilMenu.Open(k, () => { }));
+            Section("CbPolitics", "Política", PoliticsMenu.Open);
             Section("CbDisputes", "Disputas internas", k => DisputeMenu.Open(k, () => { }));
         }
 
@@ -126,7 +127,8 @@ namespace CasusBelli.UI.Titles
                 .ToList();
 
             string heading = current?.FullName?.ToString() ?? $"Hierarquia de {kingdom.Name}";
-            string description = current == null ? "Títulos soberanos" : $"Titular de jure: {Holder(current)}";
+            string description = current == null ? "Títulos soberanos" : $"Titular de jure: {Holder(current)}. Posse de facto: {current.DeFactoHolder?.Name}.\n" +
+                $"Herança: {RealmLaw.Translate(current.Contract?.Inheritance?.StringId)}. Sucessão: {RealmLaw.Translate(current.Contract?.Succession?.StringId)}. Lei de gênero: {RealmLaw.Translate(current.Contract?.GenderLaw?.StringId)}.";
             void GoBack()
             {
                 if (path.Count == 0) return;
@@ -141,6 +143,7 @@ namespace CasusBelli.UI.Titles
             }
             else
             {
+                entries.Add(new InquiryElement("actions","Atos feudais e reconhecimento",null));
                 var claim = TitleManager.Instance.GetModel().GetClaimAction(current, Hero.MainHero);
                 entries.Add(new InquiryElement("claim", "Fabricar reivindicação", null, claim.Possible, claim.Reason.ToString()));
                 if (current.OngoingClaims.TryGetValue(Hero.MainHero, out var deadline))
@@ -155,6 +158,7 @@ namespace CasusBelli.UI.Titles
                     if (choice is string command)
                     {
                         if (command == "search") ChooseClaimTitle(() => ShowBranch(kingdom, path));
+                        else if (command == "actions") FeudalActionsMenu.Open(current,() => ShowBranch(kingdom,path));
                         else ConfirmClaim(current, () => ShowBranch(kingdom, path));
                         return;
                     }

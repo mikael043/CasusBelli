@@ -368,7 +368,7 @@ namespace CasusBelli
 
             BattlesText = Line("Batalhas", b.Battles * sign);
             SiegesText = Line("Cercos", b.Sieges * sign) + "  " + Line("Saques", b.Raids * sign);
-            ObjectiveText = war.CasusBelliType == CasusBelliCampaignBehavior.ClaimWarType
+            ObjectiveText = war.IsTerritorial
                 ? Line("Objetivo do casus belli", b.Objective * sign)
                 : "Objetivo do casus belli: nenhum";
             PrisonersText = Line("Prisioneiros", b.Prisoners * sign);
