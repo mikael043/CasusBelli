@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<SpriteData>
+  <SpriteCategories>
+    <SpriteCategory>
+      <Name>ui_CB_WAR_LAYERS</Name>
+      <AlwaysLoad />
+      <SpriteSheetCount>1</SpriteSheetCount>
+      <SpriteSheetSize ID="1" Width="2048" Height="512" />
+    </SpriteCategory>
+  </SpriteCategories>
+  <SpriteParts>
+    <SpritePart>
+      <SheetID>1</SheetID>
+      <Name>CbWar\ShieldLeft</Name>
+      <Width>360</Width>
+      <Height>360</Height>
+      <SheetX>4</SheetX>
+      <SheetY>4</SheetY>
+      <CategoryName>ui_CB_WAR_LAYERS</CategoryName>
+    </SpritePart>
+    <SpritePart>
+      <SheetID>1</SheetID>
+      <Name>CbWar\ShieldOutline</Name>
+      <Width>360</Width>
+      <Height>360</Height>
+      <SheetX>372</SheetX>
+      <SheetY>4</SheetY>
+      <CategoryName>ui_CB_WAR_LAYERS</CategoryName>
+    </SpritePart>
+    <SpritePart>
+      <SheetID>1</SheetID>
+      <Name>CbWar\ShieldRight</Name>
+      <Width>360</Width>
+      <Height>360</Height>
+      <SheetX>740</SheetX>
+      <SheetY>4</SheetY>
+      <CategoryName>ui_CB_WAR_LAYERS</CategoryName>
+    </SpritePart>
+    <SpritePart>
+      <SheetID>1</SheetID>
+      <Name>CbWar\Swords</Name>
+      <Width>360</Width>
+      <Height>360</Height>
+      <SheetX>1108</SheetX>
+      <SheetY>4</SheetY>
+      <CategoryName>ui_CB_WAR_LAYERS</CategoryName>
+    </SpritePart>
+  </SpriteParts>
+  <Sprites>
+    <GenericSprite>
+      <Name>CbWar\ShieldLeft</Name>
+      <SpritePartName>CbWar\ShieldLeft</SpritePartName>
+    </GenericSprite>
+    <GenericSprite>
+      <Name>CbWar\ShieldOutline</Name>
+      <SpritePartName>CbWar\ShieldOutline</SpritePartName>
+    </GenericSprite>
+    <GenericSprite>
+      <Name>CbWar\ShieldRight</Name>
+      <SpritePartName>CbWar\ShieldRight</SpritePartName>
+    </GenericSprite>
+    <GenericSprite>
+      <Name>CbWar\Swords</Name>
+      <SpritePartName>CbWar\Swords</SpritePartName>
+    </GenericSprite>
+  </Sprites>
+</SpriteData>

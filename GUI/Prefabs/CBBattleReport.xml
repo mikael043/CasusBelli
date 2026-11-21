@@ -1,0 +1,68 @@
+<!-- Janela de relatorio de batalha mostrada 1h apos fim da missao.
+     Carregada via GauntletLayer.LoadMovie("CBBattleReport", vm) -->
+<Prefab>
+  <Window DoNotAcceptEvents="true"
+          WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+          SuggestedWidth="720" SuggestedHeight="480"
+          HorizontalAlignment="Center" VerticalAlignment="Center">
+    <Children>
+      <!-- Fundo escuro semi-transparente -->
+      <Widget DoNotAcceptEvents="true"
+              WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+              Sprite="BlankWhiteSquare_9" Color="#18130EF5" />
+      <ListPanel DoNotAcceptEvents="true"
+                 WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                 MarginLeft="32" MarginRight="32" MarginTop="28" MarginBottom="28"
+                 StackLayout.LayoutMethod="VerticalTopToBottom">
+        <Children>
+          <!-- Titulo -->
+          <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                      SuggestedHeight="42" Brush.FontSize="32" Brush.FontColor="#D4AF37FF"
+                      Brush.TextHorizontalAlignment="Center" Text="@Title" />
+
+          <!-- Descricao (localizacao + combatentes) -->
+          <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                      SuggestedHeight="60" Brush.FontSize="20" Brush.FontColor="#F4E1C1FF"
+                      Brush.TextHorizontalAlignment="Center" Text="@Description" />
+
+          <!-- Separador -->
+          <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1"
+                  Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" MarginTop="8" MarginBottom="8" />
+
+          <!-- Baixas -->
+          <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                      SuggestedHeight="32" Brush.FontSize="20" Brush.FontColor="#F4E1C1FF"
+                      Brush.TextHorizontalAlignment="Center" Text="@CasualtiesText" />
+
+          <!-- Prisioneiros -->
+          <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                      SuggestedHeight="32" Brush.FontSize="20" Brush.FontColor="#F4E1C1FF"
+                      Brush.TextHorizontalAlignment="Center" Text="@PrisonersText" />
+
+          <!-- Separador -->
+          <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1"
+                  Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" MarginTop="12" MarginBottom="12" />
+
+          <!-- WarScore change (grande, colorido) -->
+          <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                      SuggestedHeight="48" Brush.FontSize="36"
+                      Brush.FontColor="@WarScoreColor"
+                      Brush.TextHorizontalAlignment="Center" Text="@WarScoreText" />
+
+          <!-- Botao Fechar -->
+          <ButtonWidget DoNotPassEventsToChildren="true" UpdateChildrenStates="true"
+                        WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                        SuggestedWidth="180" SuggestedHeight="42"
+                        HorizontalAlignment="Center" MarginTop="24"
+                        Brush="ButtonBrush1" Command.Click="ExecuteClose">
+            <Children>
+              <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                          Brush.TextHorizontalAlignment="Center" Brush.TextVerticalAlignment="Center"
+                          Text="Fechar" />
+            </Children>
+          </ButtonWidget>
+        </Children>
+      </ListPanel>
+    </Children>
+  </Window>
+</Prefab>

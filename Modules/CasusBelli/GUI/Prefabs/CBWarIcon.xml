@@ -1,0 +1,11 @@
+<Prefab>
+  
+  <!-- O botão agora pode ter QUALQUER largura (SuggestedWidth) que ele não vai distorcer as pontas -->
+  <ButtonWidget WidthSizePolicy="Fixed" 
+                HeightSizePolicy="Fixed" 
+                SuggestedWidth="360" 
+                SuggestedHeight="360" 
+                Brush="WarScore" 
+                Command.Click="@ExecuteOpen" />
+
+</Prefab>

@@ -1,0 +1,5 @@
+<Config>
+    <SpriteCategory Name="ui_CB_WAR_LAYERS">
+        <AlwaysLoad/>
+    </SpriteCategory>
+</Config>

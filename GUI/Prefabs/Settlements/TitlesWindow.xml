@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Widget id="TitlesWindowRoot"
+        Width="1000"
+        Height="600"
+        IsScaleToFit="false"
+        UseClipRect="true">
+    <Sources>
+        <DataSource SourceType="ViewModel" Id="TitleTreeVM" />
+    </Sources>
+    <StyleSheet>
+        <Property Name="DefaultFontName" Value="@ui Fonts/tahoma"/>
+        <Property Name="DefaultFontSize" Value="14"/>
+        <Property Name="DefaultFontColor" Value="#FFFFFFFF"/>
+    </StyleSheet>
+
+    <!-- Title header -->
+    <Text id="HeaderText">
+        <Property Name="Text" Value="Títulos Feudais"/>
+        <Property Name="FontSize" Value="22"/>
+        <Property Name="Color" Value="#FFFFFFFF"/>
+        <Position>
+            <Property Name="Left" Value="20"/>
+            <Property Name="Top" Value="15"/>
+        </Position>
+    </Text>
+
+    <!-- Close button -->
+    <Widget id="CloseButton" Width="30" Height="30">
+        <Position>
+            <Property Name="Right" Value="20"/>
+            <Property Name="Top" Value="15"/>
+        </Position>
+        <Event OnClick="CloseWindow" />
+        <Text>
+            <Property Name="Text" Value="X"/>
+            <Property Name="FontSize" Value="16"/>
+            <Property Name="Color" Value="#FFFFFFFF"/>
+        </Text>
+    </Widget>
+
+    <!-- Left panel: title list -->
+    <Widget id="LeftPanel" Width="300" Height="1.0">
+        <Position>
+            <Property Name="Left" Value="10"/>
+            <Property Name="Top" Value="60"/>
+            <Property Name="Bottom" Value="10"/>
+        </Position>
+        <Property Name="BackgroundColor" Value="#66000000"/>
+
+        <!-- Search box -->
+        <Widget id="SearchBox" Width="280" Height="35">
+            <Position>
+                <Property Name="Top" Value="10"/>
+                <Property Name="Left" Value="10"/>
+            </Position>
+            <DataSource DataSourceId="TitleTreeVM" PropertyName="SearchText" />
+            <Text>
+                <Property Name="Text" Value="Peserrar..."/>
+                <Property Name="Color" Value="#888888"/>
+            </Text>
+        </Widget>
+
+        <!-- Title list -->
+        <Widget id="TitleListContainer" Width="280" Height="1.0">
+            <Position>
+                <Property Name="Left" Value="10"/>
+                <Property Name="Top" Value="55"/>
+                <Property Name="Bottom" Value="10"/>
+            </Widget>
+            <DataSource DataSourceId="TitleTreeVM" PropertyName="RootTitles">
+                <DefaultViewModel Type="TitleElementVM">
+                    <Property Name="NameText" SourceProperty="Text" />
+                    <Event OnClick="SelectItem" />
+                </DefaultViewModel>
+            </DataSource>
+        </Widget>
+    </Widget>
+
+    <!-- Right panel: title details -->
+    <Widget id="RightPanel" Width="1.0" Height="1.0">
+        <Position>
+            <Property Name="Left" Value="320"/>
+            <Property Name="Top" Value="60"/>
+            <Property Name="Right" Value="10"/>
+            <Property Name="Bottom" Value="10"/>
+        </Widget>
+        <Property Name="BackgroundColor" Value="#66000000"/>
+
+        <!-- Selected title info -->
+        <Widget id="TitleDetails" Width="400" Height="200">
+            <Position>
+                <Property Name="Top" Value="10"/>
+                <Property Name="Left" Value="10"/>
+            </Widget>
+            <DataSource DataSourceId="TitleTreeVM" PropertyName="SelectedTitleName" />
+            <Text id="TitleName">
+                <Property Name="Text" Value="Selecione um título"/>
+                <Property Name="FontSize" Value="18"/>
+                <Property Name="Color" Value="#FFFFFFFF"/>
+            </Text>
+            <DataSource DataSourceId="TitleTreeVM" PropertyName="SelectedTitleFief" />
+            <Text id="TitleFief">
+                <Property Name="Text" Value=""/>
+                <Property Name="FontSize" Value="14"/>
+                <Property Name="Color" Value="#CCCCCC"/>
+                <Position>
+                    <Property Name="Top" Value="40"/>
+                </Position>
+            </Text>
+        </Widget>
+
+        <!-- Demesne hierarchy -->
+        <Widget id="DemesneHierarchy" Width="400" Height="350">
+            <Position>
+                <Property Name="Top" Value="230"/>
+                <Property Name="Left" Value="10"/>
+            </Widget>
+            <Text>
+                <Property Name="Text" Value="Hierarquia do Domínio"/>
+                <Property Name="FontSize" Value="14"/>
+                <Property Name="Color" Value="#FFFFFFFF"/>
+            </Text>
+        </Widget>
+    </Widget>
+</Widget>

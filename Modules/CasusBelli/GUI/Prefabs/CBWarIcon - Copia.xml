@@ -1,0 +1,215 @@
+<Prefab>
+  <Window>
+    <!-- Icone de guerra estilo CK2: escudo dividido (esquerda = seu reino,
+         direita = reino inimigo), espadas cruzadas atras e a porcentagem de
+         WarScore embaixo. Clique abre a janela de negociacao.
+         Gerado a partir de blocos coloridos (sem imagem).
+         Mude MarginLeft/MarginTop para trocar de lugar. Se mudar, ajuste
+         tambem IconLeft/IconTop em CasusBelliWarScoreHud.cs. -->
+    <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren"
+            HorizontalAlignment="Left" VerticalAlignment="Top"
+            MarginLeft="14" MarginTop="130" IsVisible="@IsVisible">
+      <Children>
+        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                      SuggestedWidth="96" SuggestedHeight="128"
+                      DoNotPassEventsToChildren="true"
+                      Command.Click="ExecuteOpen"
+                      Command.HoverBegin="ExecuteHoverBegin"
+                      Command.HoverEnd="ExecuteHoverEnd">
+          <Children>
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="9" MarginTop="83" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="13" MarginTop="79" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="17" MarginTop="74" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="70" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="25" MarginTop="66" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="29" MarginTop="61" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="33" MarginTop="57" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="37" MarginTop="53" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="41" MarginTop="48" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="45" MarginTop="44" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="49" MarginTop="40" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="53" MarginTop="35" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="57" MarginTop="31" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="61" MarginTop="27" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="65" MarginTop="22" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="69" MarginTop="18" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="73" MarginTop="14" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="77" MarginTop="9" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="81" MarginTop="5" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="11" MarginTop="85" Sprite="BlankWhiteSquare_9" Color="#7A4B24FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="15" MarginTop="81" Sprite="BlankWhiteSquare_9" Color="#7A4B24FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="19" MarginTop="76" Sprite="BlankWhiteSquare_9" Color="#7A4B24FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="23" MarginTop="72" Sprite="BlankWhiteSquare_9" Color="#7A4B24FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="27" MarginTop="68" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="31" MarginTop="63" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="35" MarginTop="59" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="39" MarginTop="55" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="43" MarginTop="50" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="47" MarginTop="46" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="51" MarginTop="42" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="55" MarginTop="37" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="59" MarginTop="33" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="63" MarginTop="29" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="67" MarginTop="24" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="71" MarginTop="20" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="75" MarginTop="16" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="79" MarginTop="11" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="83" MarginTop="7" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="19" MarginTop="53" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="23" MarginTop="57" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="26" MarginTop="60" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="29" MarginTop="63" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="33" MarginTop="66" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="36" MarginTop="69" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="38" MarginTop="70" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="55" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="58" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="27" MarginTop="61" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="30" MarginTop="64" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="34" MarginTop="67" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="37" MarginTop="70" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="40" MarginTop="72" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="7" MarginTop="85" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="7" SuggestedHeight="7" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="8" MarginTop="87" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="77" MarginTop="83" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="73" MarginTop="79" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="69" MarginTop="74" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="65" MarginTop="70" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="61" MarginTop="66" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="57" MarginTop="61" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="53" MarginTop="57" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="49" MarginTop="53" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="45" MarginTop="48" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="41" MarginTop="44" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="37" MarginTop="40" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="33" MarginTop="35" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="29" MarginTop="31" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="25" MarginTop="27" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="22" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="17" MarginTop="18" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="13" MarginTop="14" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="9" MarginTop="9" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="5" MarginTop="5" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="79" MarginTop="85" Sprite="BlankWhiteSquare_9" Color="#7A4B24FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="75" MarginTop="81" Sprite="BlankWhiteSquare_9" Color="#7A4B24FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="71" MarginTop="76" Sprite="BlankWhiteSquare_9" Color="#7A4B24FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="67" MarginTop="72" Sprite="BlankWhiteSquare_9" Color="#7A4B24FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="63" MarginTop="68" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="59" MarginTop="63" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="55" MarginTop="59" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="51" MarginTop="55" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="47" MarginTop="50" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="43" MarginTop="46" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="39" MarginTop="42" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="35" MarginTop="37" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="31" MarginTop="33" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="27" MarginTop="29" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="23" MarginTop="24" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="19" MarginTop="20" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="15" MarginTop="16" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="11" MarginTop="11" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="7" MarginTop="7" Sprite="BlankWhiteSquare_9" Color="#D9DDE3FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="70" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="52" MarginTop="69" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="55" MarginTop="66" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="59" MarginTop="63" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="62" MarginTop="60" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="8" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="65" MarginTop="57" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="67" MarginTop="53" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="50" MarginTop="72" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="53" MarginTop="70" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="56" MarginTop="67" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="60" MarginTop="64" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="63" MarginTop="61" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="66" MarginTop="58" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="6" SuggestedHeight="6" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="69" MarginTop="55" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="10" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="79" MarginTop="85" Sprite="BlankWhiteSquare_9" Color="#2B2118FF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="7" SuggestedHeight="7" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="81" MarginTop="87" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="3" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="13" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="16" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="20" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="24" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="28" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="32" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="36" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="40" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="44" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="54" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="21" MarginTop="48" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="23" MarginTop="52" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="46" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="25" MarginTop="56" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="42" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="27" MarginTop="60" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="38" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="29" MarginTop="64" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="32" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="32" MarginTop="68" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="26" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="35" MarginTop="72" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="38" MarginTop="76" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="14" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="41" MarginTop="80" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="43" MarginTop="84" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="3" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="44" MarginTop="88" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="16" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="16" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="20" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="20" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="24" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="24" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="28" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="28" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="32" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="32" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="36" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="36" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="40" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="40" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="44" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="44" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="24" MarginTop="48" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="24" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="48" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="22" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="26" MarginTop="52" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="22" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="52" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="28" MarginTop="56" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="56" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="18" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="30" MarginTop="60" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="18" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="60" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="16" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="32" MarginTop="64" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="16" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="64" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="13" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="35" MarginTop="68" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="13" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="68" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="38" MarginTop="72" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="72" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="7" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="41" MarginTop="76" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="7" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="76" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="4" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="44" MarginTop="80" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="4" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="80" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="2" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="46" MarginTop="84" Sprite="BlankWhiteSquare_9" Color="@LeftColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="2" SuggestedHeight="4" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="48" MarginTop="84" Sprite="BlankWhiteSquare_9" Color="@ShieldColor" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="2" SuggestedHeight="72" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="47" MarginTop="16" Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <!-- caixa da porcentagem -->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                    SuggestedWidth="92" SuggestedHeight="30"
+                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                    MarginLeft="2" MarginTop="96"
+                    Sprite="BlankWhiteSquare_9" Color="#C9A24AFF" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                    SuggestedWidth="88" SuggestedHeight="26"
+                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                    MarginLeft="4" MarginTop="98"
+                    Sprite="BlankWhiteSquare_9" Color="#1A1511FF" />
+            <!-- faixa de cor: verde / dourado / vermelho -->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                    SuggestedWidth="88" SuggestedHeight="4"
+                    HorizontalAlignment="Left" VerticalAlignment="Top"
+                    MarginLeft="4" MarginTop="120"
+                    Sprite="BlankWhiteSquare_9" Color="@PercentColor" />
+            <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                        SuggestedWidth="88" SuggestedHeight="22"
+                        HorizontalAlignment="Left" VerticalAlignment="Top"
+                        MarginLeft="4" MarginTop="99"
+                        Brush.FontSize="22" Brush.FontColor="#F4E1C1FF"
+                        Brush.TextHorizontalAlignment="Center"
+                        Brush.TextVerticalAlignment="Center"
+                        Text="@PercentText" />
+          </Children>
+        </ButtonWidget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

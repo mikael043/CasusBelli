@@ -1,0 +1,31 @@
+<Brushes>
+
+	<Brush Name="WarScore" TransitionDuration="0.1">
+		<Layers>
+			
+			<BrushLayer Name="Espada"
+		           Sprite="CB_WAR_LAYERS\Espada"
+		           HorizontalAlignment="Center"
+		           WidthSizePolicy="Fixed" SugestedWidth="20" />
+
+			<BrushLayer Name="EscudoDireita"
+				   Sprite="CB_WAR_LAYERS\Escudo_Direita"
+				   HorizontalAlignment="Center"
+				   WidthSizePolicy="Fixed" SugestedWidth="20" />
+
+			<BrushLayer Name="EscudoEsquerda"
+				   Sprite="CB_WAR_LAYERS\Escudo_Esquerda"
+				   HorizontalAlignment="Center"
+				   WidthSizePolicy="Fixed" SugestedWidth="20" />
+
+			<BrushLayer Name="EscudoContorno"
+				   Sprite="CB_WAR_LAYERS\Escudo_Contorno"
+				   HorizontalAlignment="Center"		
+				   WidthSizePolicy="Fixed" SugestedWidth="20" />
+			
+		</Layers>
+		<Styles>
+			<Style Name="Default" />
+		</Styles>
+	</Brush>
+</Brushes>

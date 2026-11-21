@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Widget id="DemesneHierarchyRoot"
+        IsScaleToFit="0.4"
+        IsKeepAspect="true"
+        Width="1.0"
+        Height="1.0"
+        UseClipRect="true">
+    <Sources>
+        <DataSource SourceType="ViewModel" Id="TitleTreeVM" />
+    </Sources>
+    <Style id="demesne_style">
+        <Property Name="BackgroundColor" Value="#CC000000"/>
+        <Property Name="BorderColor" Value="#FF555555"/>
+        <Property Name="BorderThickness" Value="1"/>
+    </Style>
+    <Text id="HeaderText">
+        <Property Name="Text" Value="Hierarquia do Domínio"/>
+        <Property Name="FontSize" Value="18"/>
+        <Property Name="Color" Value="#FFFFFFFF"/>
+        <Position>
+            <Property Name="Left" Value="0.5"/>
+            <Property Name="Top" Value="0.02"/>
+            <Property Name="PivotX" Value="0.5"/>
+            <Property Name="PivotY" Value="0"/>
+        </Position>
+    </Text>
+    <Widget id="ContentContainer">
+        <Property Name="Left" Value="10"/>
+        <Property Name="Top" Value="60"/>
+        <Property Name="Right" Value="10"/>
+        <Property Name="Bottom" Value="10"/>
+        <ScrollBar id="Scroll" Orientation="Vertical">
+            <Property Name="Width" Value="10"/>
+            <Property Name="Right" Value="10"/>
+        </ScrollBar>
+        <Widget id="HierarchyList">
+            <Property Name="Left" Value="0"/>
+            <Property Name="Top" Value="0"/>
+            <Property Name="Right" Value="10"/>
+            <Property Name="Bottom" Value="0"/>
+        </Widget>
+    </Widget>
+</Widget>

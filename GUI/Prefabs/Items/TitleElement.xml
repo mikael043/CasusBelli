@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Widget id="TitleElementRoot"
+        IsScaleToFit="0.45"
+        Height="40"
+        UseClipRect="true">
+    <Sources>
+        <DataSource SourceType="ViewModel" Id="TitleElementVM" />
+    </Sources>
+    <Style id="title_element_style">
+        <Property Name="BackgroundColor" Value="#00000000"/>
+        <Property Name="BorderColor" Value="#33555555"/>
+        <Property Name="BorderThickness" Value="1"/>
+        <Property Name="Padding" Value="5"/>
+    </Style>
+    <Widget id="IconContainer">
+        <Property Name="Width" Value="30"/>
+        <Property Name="Height" Value="30"/>
+        <Property Name="Left" Value="5"/>
+        <Property Name="Top" Value="5"/>
+        <Image id="Portrait">
+            <Property Name="Source" Value="{Binding Title.ImageIdentifier.Image}"/>
+        </Image>
+    </Widget>
+    <Text id="TitleName">
+        <Property Name="Text" Value="{Binding Title.NameText}"/>
+        <Property Name="FontSize" Value="14"/>
+        <Property Name="Color" Value="#FFFFFFFF"/>
+        <Property Name="Left" Value="45"/>
+        <Property Name="Top" Value="8"/>
+        <Property Name="Width" Value="200"/>
+    </Text>
+    <Text id="TitleType">
+        <Property Name="Text" Value="{Binding Title.TypeName}"/>
+        <Property Name="FontSize" Value="12"/>
+        <Property Name="Color" Value="#CCCCCC"/>
+        <Property Name="Left" Value="45"/>
+        <Property Name="Top" Value="28"/>
+    </Text>
+    <Widget id="VassalBadge">
+        <Property Name="Width" Value="15"/>
+        <Property Name="Height" Value="15"/>
+        <Property Name="Left" Value="250"/>
+        <Property Name="Top" Value="12"/>
+        <Image>
+            <Property Name="Source" Value="@ui Fonts/badge_vassal.png"/>
+        </Image>
+    </Widget>
+</Widget>
