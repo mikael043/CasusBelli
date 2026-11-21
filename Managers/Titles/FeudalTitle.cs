@@ -351,7 +351,7 @@ namespace CasusBelli.Managers.Titles
 
             if (!_ongoingClaims.ContainsKey(hero))
             {
-                var claimTime = CampaignTime.YearsFromNow(1);
+                var claimTime = CampaignTime.YearsFromNow(CouncilDuties.ClaimYears(hero));
 
                 _ongoingClaims.Add(hero, claimTime);
             }

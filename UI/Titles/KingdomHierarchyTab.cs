@@ -194,7 +194,7 @@ namespace CasusBelli.UI.Titles
             }
             string details = $"{title.FullName} ({title.StringId})\nTitular: {Holder(title)}\n" +
                 $"Custo: {action.Gold:0} de ouro, {action.Influence:0} de influência e {action.Renown:0} de renome.\n" +
-                "A fabricação demora um ano e prejudica a relação com o titular.";
+                 $"Prazo: {System.Math.Ceiling(CampaignTime.YearsFromNow(CouncilDuties.ClaimYears(Hero.MainHero)).RemainingDaysFromNow)} dias. A fabricação prejudica a relação com o titular.";
             InformationManager.ShowInquiry(new InquiryData("Fabricar reivindicação", details, true, true,
                 "Iniciar fabricação", "Voltar", () =>
                 {

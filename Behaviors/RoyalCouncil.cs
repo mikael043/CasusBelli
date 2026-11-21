@@ -7,6 +7,7 @@ namespace CasusBelli
 {
     public sealed class RoyalCouncil : CampaignBehaviorBase
     {
+        private List<string> _discoveries = new List<string>();
         private Dictionary<string,string> _members = new Dictionary<string,string>();
         private static string Key(Kingdom realm, CouncilOffice office) => realm.StringId + "|" + (int)office;
         internal string Member(Kingdom realm, CouncilOffice office) =>
@@ -14,6 +15,8 @@ namespace CasusBelli
 
         public override void SyncData(IDataStore store)
         {
+            store.SyncData("CasusBelli_CouncilDiscoveries_v1", ref _discoveries);
+            _discoveries ??= new List<string>();
             var rows = store.IsSaving ? _members.Select(p => p.Key + "|" + p.Value).ToList() : new List<string>();
             store.SyncData("CasusBelli_RoyalCouncil_v1", ref rows);
             if (!store.IsLoading) return;
@@ -39,12 +42,19 @@ namespace CasusBelli
         }
         private void Review()
         {
+            bool weekly = (int)CampaignTime.Now.ToDays % 7 == 0;
+            var live = new HashSet<string>();
             foreach (var realm in Kingdom.All.Where(k => !k.IsEliminated && k.Leader != null))
             {
                 var court = CouncilSelection.Court(realm);
                 foreach (var office in CouncilSelection.Offices)
                     if (!court.Any(h => h.StringId == Member(realm,office) && CouncilSelection.Eligible(realm,h,office)))
                         _members.Remove(Key(realm,office));
+                if (weekly)
+                {
+                    CouncilDuties.Accounts(realm);
+                    CouncilDuties.Intelligence(realm,_discoveries,live);
+                }
                 if (realm.Leader == Hero.MainHero) continue;
                 foreach (var office in CouncilSelection.Offices)
                 {
@@ -56,6 +66,7 @@ namespace CasusBelli
                         _members[Key(realm,office)] = best.StringId;
                 }
             }
+            if (weekly) _discoveries.RemoveAll(k => !live.Contains(k));
         }
     }
 }

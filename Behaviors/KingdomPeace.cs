@@ -33,6 +33,8 @@ namespace CasusBelli
                     else if (owner == OtherSide(war, recipient)?.StringId) threshold -= 10;
                 }
             }
+            var envoy = CouncilDuties.Officer(OtherSide(war,recipient),CouncilOffice.Chancellor);
+            if (envoy != null) threshold -= Math.Min(5,envoy.GetSkillValue(TaleWorlds.Core.DefaultSkills.Charm) / 50f);
             return Math.Min(100, Math.Max(55, threshold));
         }
 

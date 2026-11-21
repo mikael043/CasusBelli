@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using CasusBelli.Managers.Titles;
 using TaleWorlds.CampaignSystem;
@@ -43,10 +44,37 @@ namespace CasusBelli.Disputes
             if (yieldTitle) Resolve(dispute, true);
             else
             {
-                dispute.Contested = true;
-                dispute.NextPeaceOffer = CampaignTime.DaysFromNow(7);
-                Report(dispute, "O titular recusou. Começou a guerra pessoal.");
+                var envoy = CouncilDuties.Officer(dispute.Realm,CouncilOffice.Chancellor);
+                if (!dispute.MediationAttempted && envoy != null && envoy != dispute.Claimant && envoy != dispute.Holder)
+                {
+                    dispute.MediationAttempted = true;
+                    int trust = Math.Min(envoy.GetRelation(dispute.Claimant), envoy.GetRelation(dispute.Holder));
+                    if (MBRandom.RandomFloat < Math.Max(0,Math.Min(.8f,.15f + envoy.GetSkillValue(DefaultSkills.Charm)/500f + trust/300f)))
+                    {
+                        void Mediate()
+                        {
+                            if (!dispute.IsActive || !dispute.Demanded || dispute.Contested) return;
+                            dispute.Demanded = false;
+                            dispute.TruceEnds = CampaignTime.DaysFromNow(30);
+                            Report(dispute,$"{envoy.Name} mediou uma trégua de 30 dias. O titular conserva o feudo e o pretendente mantém sua reivindicação.");
+                        }
+                        if (dispute.Realm.Leader == Hero.MainHero || dispute.Claimant.Clan == Clan.PlayerClan || dispute.Holder.Clan == Clan.PlayerClan)
+                            InformationManager.ShowInquiry(new InquiryData("Mediação do chanceler", $"{envoy.Name} propõe suspender por 30 dias a disputa por {dispute.Title.FullName}. Aceitar?",
+                                true,true,"Aceitar","Recusar",Mediate,() => BeginConflict(dispute)));
+                        else Mediate();
+                        return;
+                    }
+                }
+                BeginConflict(dispute);
             }
+        }
+
+        private static void BeginConflict(TitleDispute dispute)
+        {
+            if (!dispute.IsActive || !dispute.Demanded || dispute.Contested) return;
+            dispute.Contested = true;
+            dispute.NextPeaceOffer = CampaignTime.DaysFromNow(7);
+            Report(dispute, "O titular recusou. Começou a guerra pessoal.");
         }
 
         internal static int Troops(TitleDispute dispute, bool attacker)

@@ -25,7 +25,7 @@ namespace CasusBelli.UI.Titles
                 return;
             }
             MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData("Conselho do reino",
-                "Escolha um cargo para consultar os candidatos por competência.",seats,true,1,1,"Consultar","Voltar",
+                 $"Tesouro real: {realm.KingdomBudgetWallet:N0} denários. Escolha um cargo para consultar seus candidatos.",seats,true,1,1,"Consultar","Voltar",
                 selection => { if (selection.Count == 1) Choose(realm,(CouncilOffice)selection[0].Identifier,() => Open(realm,back)); }, s => back()));
         }
         private static void Choose(Kingdom realm, CouncilOffice office, Action back)

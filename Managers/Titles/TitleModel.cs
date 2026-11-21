@@ -173,7 +173,7 @@ namespace CasusBelli.Managers.Titles
             action.Influence = GetInfluenceClaimCost(title);
             action.Renown = GetRenownClaimCost(title);
             action.Possible = true;
-            action.Reason = new TextObject("Fabricar uma reivindicação sobre {TITLE}. Prazo: um ano.")
+            action.Reason = new TextObject("Fabricar uma reivindicação sobre {TITLE}. O prazo da Coroa depende do chanceler.")
                 .SetTextVariable("TITLE", title.FullName);
 
             CheckTitleCosts(action);

@@ -44,6 +44,7 @@ namespace CasusBelli.Disputes
         [SaveableProperty(10)] public CampaignTime NextPeaceOffer { get; internal set; }
         [SaveableProperty(11)] public Clan PeaceProposer { get; internal set; }
         [SaveableProperty(12)] public CampaignTime TruceEnds { get; internal set; }
+        [SaveableProperty(13)] public bool MediationAttempted { get; internal set; }
         public bool CanDemand => IsActive && !Demanded && Title.GetHeroClaim(Claimant) == ClaimType.Fabricated;
 
         public TitleDispute(FeudalTitle title, Hero claimant)
