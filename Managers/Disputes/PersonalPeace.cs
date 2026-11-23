@@ -20,7 +20,10 @@ namespace CasusBelli.Disputes
             if (!CanOffer(d) || !Principal(d, clan)) return;
             d.PeaceProposer = clan;
             d.NextPeaceOffer = CampaignTime.DaysFromNow(7);
-            PersonalTitleWar.Report(d, $"{clan.Name} propõe paz branca.");
+            var recipient = clan == d.Claimant.Clan ? d.Holder.Clan : d.Claimant.Clan;
+            PersonalTitleWar.Report(d, recipient == Clan.PlayerClan
+                ? $"{clan.Name} propõe paz branca. Responda em K → CasusBelli → Disputas internas em até 7 dias."
+                : $"{clan.Name} propõe paz branca.");
         }
 
         internal static void Answer(TitleDispute d, Clan clan, bool accept)

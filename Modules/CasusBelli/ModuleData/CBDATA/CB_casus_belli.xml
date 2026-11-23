@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Casus Belli - catalogo de justificativas de guerra (CB_casus_belli.xml).
+  Adaptado da estrutura de bk_casus_belli.xml para o projeto CasusBelli.
+
+  ESTE ARQUIVO AINDA E DADO DE PROJETO: nao existe um leitor C# para ele.
+  Nenhum item aqui autoriza guerras, altera o WarScore ou desbloqueia votacoes
+  ate que o registro/validador CB seja implementado.
+
+  O comportamento (validacao, alvo, elegibilidade, condicoes de vitoria/paz
+  e ganchos da guerra) sera implementado em C#; a chave "behavior" e futura.
+  O campo "status" serve apenas para auditoria de desenvolvimento:
+    existing_logic = ja existe alguma logica equivalente na DLL
+    planned        = planejado, ainda sem comportamento completo
+    reference_only = ideia BK guardada, NAO deve habilitar guerra nativa
+    deferred       = depende de sistemas ainda inexistentes
+
+  Numeros preservados do XML de referencia:
+    conquest, raid, capture = PESOS DE COMPORTAMENTO da IA (nao WarScore)
+    declare_war_score      = PESO DE DECISAO de declarar guerra (nao WarScore)
+  Sao valores de referencia, nao parametros ativos nem balanceamento aprovado.
+  Traits do BK podem nao existir no Bannerlord vanilla; resolver/filtrar no C#.
+  As tags de mensagem usam {ATTACKER}, {DEFENDER}, {FIEF}.
+-->
+<casus_belli version="1" mod="CasusBelli">
+  <casus_belli id="imperial_reconquest" behavior="CBImperialReconquest"
+               war_record_type="RECONQUEST" status="existing_logic"
+               conquest="1.2" raid="1" capture="0.8" declare_war_score="8000"
+               requires_fief="false" requires_claimant="false">
+    <name>Reconquista Imperial</name>
+    <description>Reivindicacao de territorios historicamente imperiais sob dominio de reinos nao imperiais. O objetivo, seus limites e o direito historico precisam ser confirmados pelo validador C#.</description>
+    <objective>Reconquistar territorios imperiais validos</objective>
+    <war_declared_text>{ATTACKER} inicia uma reconquista imperial contra {DEFENDER}.</war_declared_text>
+    <trait_weights>
+      <trait ref="Egalitarian" weight="0.1"/>
+      <trait ref="Authoritarian" weight="0.3"/>
+      <trait ref="Oligarchic" weight="0.1"/>
+      <trait ref="Valor" weight="0.1"/>
+      <trait ref="Diligent" weight="0.1"/>
+      <trait ref="Ambitious" weight="0.2"/>
+      <trait ref="Humble" weight="-0.1"/>
+      <trait ref="Generosity" weight="-0.1"/>
+      <trait ref="Mercy" weight="-0.1"/>
+    </trait_weights>
+  </casus_belli>
+
+  <!-- O BK chama este CB de Imperial Superiority. No nosso projeto, so
+       permaneceria se receber justificativa politica propria e restrita. -->
+  <casus_belli id="imperial_superiority" behavior="CBImperialSuperiority"
+               status="reference_only"
+               conquest="1" raid="0.9" capture="1.8" declare_war_score="5000"
+               requires_fief="false" requires_claimant="false">
+    <name>Superioridade Imperial (referencia)</name>
+    <description>Pretexto expansionista do arquivo de origem. Nao deve autorizar guerra automaticamente contra reinos nao imperiais.</description>
+    <objective>Definir objetivo politico e limites antes de ativar</objective>
+    <war_declared_text>{ATTACKER} proclama sua superioridade sobre {DEFENDER}.</war_declared_text>
+    <trait_weights>
+      <trait ref="Egalitarian" weight="-0.2"/>
+      <trait ref="Authoritarian" weight="0.3"/>
+      <trait ref="Oligarchic" weight="0.1"/>
+      <trait ref="Valor" weight="0.1"/>
+      <trait ref="Diligent" weight="0.1"/>
+      <trait ref="Ambitious" weight="0.1"/>
+      <trait ref="Mercy" weight="-0.15"/>
+    </trait_weights>
+  </casus_belli>
+
+  <casus_belli id="cultural_liberation" behavior="CBCulturalLiberation"
+               status="planned"
+               conquest="1.1" raid="1" capture="0.8" declare_war_score="7500"
+               requires_fief="true" requires_claimant="false">
+    <name>Libertacao Cultural</name>
+    <description>Libertar um feudo de cultura compativel com a do atacante que esta sob dominio estrangeiro. Exige alvo concreto e destinatario politico definido.</description>
+    <objective>Conquistar o feudo-alvo</objective>
+    <war_declared_text>{ATTACKER} declara guerra a {DEFENDER} pela libertacao de {FIEF}.</war_declared_text>
+    <trait_weights>
+      <trait ref="Just" weight="0.2"/>
+      <trait ref="Mercy" weight="0.2"/>
+      <trait ref="Generosity" weight="0.1"/>
+      <trait ref="Egalitarian" weight="0.1"/>
+      <trait ref="Valor" weight="-0.1"/>
+      <trait ref="Ambitious" weight="-0.1"/>
+    </trait_weights>
+  </casus_belli>
+
+  <casus_belli id="great_raid" behavior="CBGreatRaid"
+               status="planned"
+               conquest="0.5" raid="3" capture="0.8" declare_war_score="5000"
+               requires_fief="false" requires_claimant="false">
+    <name>Grande Saque</name>
+    <description>Campanha limitada para saques e indenizacoes, sem direito automatico de anexar feudos. O objetivo de oito aldeias saqueadas veio da referencia BK e sera revisto com nosso WarScore.</description>
+    <objective>Saquear oito aldeias validas ou obter termos equivalentes</objective>
+    <war_declared_text>{ATTACKER} parte para uma campanha de saque contra {DEFENDER}.</war_declared_text>
+    <trait_weights>
+      <trait ref="Just" weight="-0.2"/>
+      <trait ref="Mercy" weight="-0.2"/>
+      <trait ref="Egalitarian" weight="-0.1"/>
+      <trait ref="Valor" weight="0.2"/>
+      <trait ref="Ambitious" weight="0.1"/>
+    </trait_weights>
+  </casus_belli>
+
+  <!-- Invasao irrestrita seria outra porta para guerras sem motivo.
+       Guardada como referencia; eventual invasao vlandiana sera um CB distinto
+       e restrito por cultura, situacao politica, alvo e cooldown. -->
+  <casus_belli id="invasion" behavior="CBInvasion"
+               status="reference_only"
+               conquest="1.2" raid="1.2" capture="0.8" declare_war_score="5000"
+               requires_fief="false" requires_claimant="false">
+    <name>Invasao Generica (referencia)</name>
+    <description>Modelo de expansao territorial do BK. Nao habilitar sem condicoes territoriais e culturais rigorosas.</description>
+    <objective>Definir objetivos delimitados antes de ativar</objective>
+    <war_declared_text>{ATTACKER} inicia uma invasao contra {DEFENDER}.</war_declared_text>
+    <trait_weights>
+      <trait ref="Just" weight="-0.2"/>
+      <trait ref="Mercy" weight="-0.1"/>
+      <trait ref="Egalitarian" weight="-0.1"/>
+      <trait ref="Authoritarian" weight="0.1"/>
+      <trait ref="Oligarchic" weight="0.1"/>
+      <trait ref="Valor" weight="0.1"/>
+      <trait ref="Ambitious" weight="0.1"/>
+    </trait_weights>
+  </casus_belli>
+
+  <!-- Adaptacao intencional: requer feudo-alvo explicito no registro do CB. -->
+  <casus_belli id="fief_claim" behavior="CBTerritorialClaim"
+               war_record_type="CLAIM" status="existing_logic"
+               conquest="1.2" raid="1" capture="1" declare_war_score="5000"
+               requires_fief="true" requires_claimant="true">
+    <name>Reivindicacao Territorial</name>
+    <description>Recuperar um feudo com reivindicacao juridica valida e identificacao do pretendente. A paz e a transferencia territorial devem respeitar o titulo reivindicado.</description>
+    <objective>Conquistar ou obter o feudo-alvo por acordo</objective>
+    <war_declared_text>{ATTACKER} declara guerra contra {DEFENDER}, reivindicando {FIEF}.</war_declared_text>
+    <trait_weights>
+      <trait ref="Just" weight="0.5"/>
+      <trait ref="Mercy" weight="0.1"/>
+      <trait ref="Generosity" weight="-0.3"/>
+      <trait ref="Oligarchic" weight="0.2"/>
+      <trait ref="Valor" weight="0.1"/>
+      <trait ref="Ambitious" weight="0.3"/>
+    </trait_weights>
+  </casus_belli>
+
+  <!-- Nao liberar por mera equivalencia de forca: seria guerra sem CB. -->
+  <casus_belli id="suppress_threat" behavior="CBSuppressThreat"
+               status="reference_only"
+               conquest="1.3" raid="1" capture="1" declare_war_score="2500"
+               requires_fief="false" requires_claimant="false">
+    <name>Contencao de Ameaca (referencia)</name>
+    <description>Pretexto preventivo do BK. So podera virar CB se houver provocacao concreta, evidencia e resposta proporcional, nunca por rivalidade de poder apenas.</description>
+    <objective>Exigir reparacao por incidente documentado</objective>
+    <war_declared_text>{ATTACKER} acusa {DEFENDER} de representar uma ameaca a sua seguranca.</war_declared_text>
+    <trait_weights>
+      <trait ref="Ambitious" weight="0.1"/>
+      <trait ref="Valor" weight="0.2"/>
+    </trait_weights>
+  </casus_belli>
+
+  <casus_belli id="rebellion" behavior="CBRebellion"
+               war_record_type="REBELLION" status="existing_logic"
+               conquest="1.2" raid="1" capture="1.4" declare_war_score="5000"
+               requires_fief="false" requires_claimant="false">
+    <name>Rebeliao</name>
+    <description>Guerra civil surgida apos rejeicao de reivindicacoes de uma faccao organizada. A duracao e as condicoes de sucesso precisam obedecer ao fluxo politico do Casus Belli.</description>
+    <objective>Impor a exigencia da faccao ou obter acordo politico</objective>
+    <war_declared_text>{ATTACKER} levanta-se contra o governo de {DEFENDER}.</war_declared_text>
+    <trait_weights>
+      <trait ref="Ambitious" weight="0.1"/>
+      <trait ref="Valor" weight="0.2"/>
+    </trait_weights>
+  </casus_belli>
+
+  <!-- Sem sistema religioso proprio, estas entradas ficam somente como
+       referencias historicas do arquivo BK, inativas. -->
+  <casus_belli id="holy_war" behavior="CBHolyWar"
+               status="deferred"
+               conquest="1" raid="1" capture="0.6" declare_war_score="5000"
+               requires_fief="false" requires_claimant="false">
+    <name>Guerra Santa (adiada)</name>
+    <description>Depende de sistema de crencas, hostilidade religiosa e custos proprios; nao ha comportamento implementado neste mod.</description>
+    <objective>Definir apenas apos implementar religiao</objective>
+    <war_declared_text>{ATTACKER} declara uma guerra religiosa contra {DEFENDER}.</war_declared_text>
+    <trait_weights>
+      <trait ref="Zealous" weight="0.5"/>
+      <trait ref="Mercy" weight="-0.1"/>
+      <trait ref="Generosity" weight="-0.3"/>
+      <trait ref="Egalitarian" weight="-0.4"/>
+      <trait ref="Authoritarian" weight="0.2"/>
+      <trait ref="Valor" weight="0.3"/>
+      <trait ref="Honor" weight="0.1"/>
+      <trait ref="Ambitious" weight="0.1"/>
+    </trait_weights>
+  </casus_belli>
+
+  <casus_belli id="divine_reclamation" behavior="CBDivineReclamation"
+               status="deferred"
+               conquest="1.2" raid="1" capture="0.6" declare_war_score="5000"
+               requires_fief="true" requires_claimant="false">
+    <name>Reconquista Religiosa (adiada)</name>
+    <description>Retomada de lugar sagrado. Depende de fe, sede religiosa e associacao verificavel entre fe e territorio.</description>
+    <objective>Conquistar o lugar sagrado selecionado</objective>
+    <war_declared_text>{ATTACKER} marcha contra {DEFENDER} para retomar o lugar sagrado de {FIEF}.</war_declared_text>
+    <trait_weights>
+      <trait ref="Zealous" weight="0.5"/>
+      <trait ref="Mercy" weight="-0.1"/>
+      <trait ref="Generosity" weight="-0.3"/>
+      <trait ref="Egalitarian" weight="-0.4"/>
+      <trait ref="Authoritarian" weight="0.2"/>
+      <trait ref="Valor" weight="0.3"/>
+      <trait ref="Honor" weight="0.1"/>
+      <trait ref="Ambitious" weight="0.1"/>
+    </trait_weights>
+  </casus_belli>
+</casus_belli>

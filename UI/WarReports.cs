@@ -60,6 +60,7 @@ namespace CasusBelli
             double warScoreChange,
             bool playerWon,
             bool playerLedWinningArmy,
+            bool playerOnArmy,
             string enemyLeaderName)
         {
             Title = "Relatório de Batalha";
@@ -92,6 +93,11 @@ namespace CasusBelli
                     // Jogador não é governante e não estava na batalha
                     whoWe = "As forças de seu reino";
                 }
+                if (playerOnArmy)
+                {
+                    // O jogador faz parte do exército sem liderar
+                    whoWe = "O exército o qual você participava";
+                }
 
                 whoThey = !string.IsNullOrEmpty(enemyLeaderName)
                     ? "o exército de " + enemyLeaderName + " do(a) " + heroName
@@ -117,6 +123,10 @@ namespace CasusBelli
                 else
                 {
                     whoWe = "As forças de seu reino";
+                }
+                if (playerOnArmy)
+                {
+                    whoWe = "O exército o qual você participava";
                 }
 
                 whoThey = !string.IsNullOrEmpty(enemyLeaderName)
@@ -218,20 +228,13 @@ namespace CasusBelli
             string settlementType = settlementName.Contains("Castelo") || settlementName.Contains("Castle") || settlementName.Contains("Fortaleza") ? "castelo" : "cidade";
             string resultText = playerWon ? "Vitória" : "Derrota";
 
-            string whoWe;
+            // A siege by the player's kingdom is not necessarily a siege led by the player.
+            // Use the victorious realm unless the captured settlement was attributed to MainHero.
+            string whoWe = playerInArmy && playerWon
+                ? "Suas tropas"
+                : "As forças de " + winnerKingdomName;
 
-            if (playerInArmy)
-            {
-                whoWe = "O exército comandado por você";
-            }
-            else
-            {
-                whoWe = "Sua companhia pessoal";
-            }
-
-            string actionText = playerWon
-                ? "conquistou"
-                : "perdeu";
+            string actionText = "conquistaram";
 
             string theyText = !string.IsNullOrEmpty(governorName)
                 ? "o " + settlementType + " de " + loserKingdomName + " (defendido por " + governorName + ")"

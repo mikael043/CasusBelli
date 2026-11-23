@@ -109,7 +109,9 @@ namespace CasusBelli.Managers.Titles
             switch (Type)
             {
                 case ActionType.Usurp:
-                    manager.UsurpTitle(Title.deJure, this);
+                    // Revalidate even if this action was created before ownership or resources changed.
+                    var usurp = manager.GetModel().GetUsurpAction(Title, ActionTaker);
+                    if (usurp.Possible) manager.UsurpTitle(Title.deJure, usurp);
                     break;
                 case ActionType.Claim:
                     manager.AddOngoingClaim(this);

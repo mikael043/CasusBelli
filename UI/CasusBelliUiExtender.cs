@@ -284,6 +284,7 @@ namespace CasusBelli
             public double WarScoreChange;
             public bool PlayerWon;
             public bool PlayerLedWinningArmy;
+            public bool PlayerOnArmy;
             public string EnemyLeaderName;
             public double ShowAtTime; // campaign time em horas
         }
@@ -420,6 +421,7 @@ namespace CasusBelli
                 WarScoreChange = report.WarScoreChange,
                 PlayerWon = report.PlayerWon,
                 PlayerLedWinningArmy = report.PlayerInArmy,
+                PlayerOnArmy = report.PlayerOnArmy,
                 EnemyLeaderName = report.EnemyLeaderName,
                 ShowAtTime = CampaignTime.Now.ToHours + 1.0
             });
@@ -473,6 +475,7 @@ namespace CasusBelli
                     report.WarScoreChange,
                     report.PlayerWon,
                     report.PlayerLedWinningArmy,
+                    report.PlayerOnArmy,
                     report.EnemyLeaderName);
 
                 _battleReport.IsVisible = true;
@@ -635,4 +638,3 @@ namespace CasusBelli
     }
 }
 #endif
- 

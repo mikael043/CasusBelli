@@ -397,36 +397,41 @@ namespace CasusBelli
             }
         }
 
-        // O feudo-alvo de uma guerra de claim foi conquistado pelo atacante.
+        // Registrar a ocupacao atual, nao a primeira ocupacao da guerra.
+        // Quando a posse e perdida, -1 apaga o bonus acumulado; uma
+        // reconquista inicia um novo periodo de controle.
+        internal static double NextObjectiveOccupationDay(
+            double previousDay, bool attackerHoldsTarget, double now)
+        {
+            return attackerHoldsTarget
+                ? (previousDay >= 0.0 ? previousDay : now)
+                : -1.0;
+        }
+
         private void MarkClaimWarObjective(
             Settlement settlement,
             Hero newOwner)
         {
+            if (settlement == null) return;
             string newKingdomId = GetKingdomId(newOwner);
-
-            if (string.IsNullOrEmpty(newKingdomId))
-            {
-                return;
-            }
+            double now = CampaignTime.Now.ToDays;
 
             foreach (WarRecord war in _warRegistry.AllWars)
             {
                 if (!war.IsActive ||
                     !war.IsTerritorial ||
-                    war.TargetSettlementId != settlement.StringId ||
-                    war.AttackerKingdomId != newKingdomId ||
-                    war.ObjectiveAchievedOnDay >= 0.0)
-                {
+                    war.TargetSettlementId != settlement.StringId)
                     continue;
-                }
 
-                war.ObjectiveAchievedOnDay = CampaignTime.Now.ToDays;
+                bool attackerHolds = war.AttackerKingdomId == newKingdomId;
+                double previous = war.ObjectiveAchievedOnDay;
+                war.ObjectiveAchievedOnDay = NextObjectiveOccupationDay(
+                    previous, attackerHolds, now);
 
-                if (IsPlayerKingdom(GetKingdom(newKingdomId)))
-                {
+                if (attackerHolds && previous < 0.0 &&
+                    IsPlayerKingdom(GetKingdom(newKingdomId)))
                     ShowMessage("CB: objetivo da guerra de reivindicacao " +
                         "conquistado: " + settlement.Name);
-                }
             }
         }
 

@@ -27,6 +27,7 @@ namespace CasusBelli
         // True quando o jogador está liderando um exército (partido principal
         // tem army anexado). False = companhia pessoal.
         public bool PlayerInArmy;
+        public bool PlayerOnArmy;
         // Nome do líder do exército inimigo (lado perdedor), ou vazio se não
         // houver um líder identificado.
         public string EnemyLeaderName;
@@ -93,7 +94,7 @@ namespace CasusBelli
         private static readonly double BattleCap = 75.0;
         private static readonly double PerBattleCap = 8.0;
         private static readonly double BattleGain = 35.0;       // pontos por 100% das tropas do perdedor
-        private static readonly int MinBattleDeaths = 5;
+        private static readonly int MinBattleCasualties = 5; // mortos + feridos do perdedor
         private static readonly double MinKingdomTroops = 1500.0;
 
         // Cercos (feudo conquistado)
@@ -703,16 +704,43 @@ namespace CasusBelli
         private static int CountDead(MapEventSide side)
         {
             int dead = 0;
-
             foreach (MapEventParty party in side.Parties)
-            {
-                if (party != null && party.DiedInBattle != null)
-                {
-                    dead += party.DiedInBattle.TotalManCount;
-                }
-            }
-
+                if (party?.DiedInBattle != null) dead += party.DiedInBattle.TotalManCount;
             return dead;
+        }
+
+        private static int CountStartingTroops(MapEventSide side)
+        {
+            int start = 0;
+            foreach (MapEventParty party in side.Parties)
+                if (party != null) start += Math.Max(0, party.HealthyManCountAtStart);
+            return start > 0 ? start : Math.Max(0, side.HealthyTroopCountAtMapEventStart);
+        }
+
+        // Pontos sempre positivos para o vencedor; AddPoints aplica o sinal do reino.
+        // Feridos valem metade dos mortos. Vantagem numerica e eficiencia do vencedor
+        // alteram a importancia da batalha, com limites para evitar distorcoes.
+        internal static double CalculateBattlePoints(
+            int loserDead, int loserWounded, int winnerDead, int winnerWounded,
+            int winnerStarting, int loserStarting, double loserKingdomTroops)
+        {
+            int loserCasualties = Math.Max(0, loserDead) + Math.Max(0, loserWounded);
+            if (loserCasualties < MinBattleCasualties) return 0.0;
+
+            double loserLosses = Math.Max(0, loserDead) + Math.Max(0, loserWounded) * .5;
+            double winnerLosses = Math.Max(0, winnerDead) + Math.Max(0, winnerWounded) * .5;
+            double basePoints = loserLosses / Math.Max(MinKingdomTroops, Math.Max(0.0, loserKingdomTroops)) * BattleGain;
+
+            // Vencer em inferioridade numerica concede ate +35%;
+            // vencer com ampla superioridade concede no minimo 80% do valor-base.
+            double strengthFactor = winnerStarting > 0 && loserStarting > 0
+                ? Clamp(Math.Sqrt((double)loserStarting / winnerStarting), .8, 1.35) : 1.0;
+
+            // Vitoria limpa vale mais; vitoria com perdas equivalentes vale o normal.
+            double efficiency = loserLosses + winnerLosses > 0
+                ? Clamp(.75 + .5 * loserLosses / (loserLosses + winnerLosses), .8, 1.2) : 1.0;
+
+            return Clamp(basePoints * strengthFactor * efficiency, 0.0, PerBattleCap);
         }
 
         private static double KingdomTroops(Kingdom kingdom)
@@ -801,24 +829,27 @@ namespace CasusBelli
 
                 DebugLog.Log("CasusBelli: OnMapEventEnded guerra encontrada warId=" + war.WarId);
 
-                int dead = CountDead(loser);
+                int loserDead = CountDead(loser);
+                int loserWounded = CountWounded(loser);
+                int winnerDead = CountDead(winner);
+                int winnerWounded = CountWounded(winner);
+                int winnerStarting = CountStartingTroops(winner);
+                int loserStarting = CountStartingTroops(loser);
+                double kingdomTroops = KingdomTroops(loserKingdom);
+                double points = CalculateBattlePoints(
+                    loserDead, loserWounded, winnerDead, winnerWounded,
+                    winnerStarting, loserStarting, kingdomTroops);
 
-                DebugLog.Log("CasusBelli: OnMapEventEnded dead=" + dead + " MinBattleDeaths=" + MinBattleDeaths);
-
-                if (dead < MinBattleDeaths)
+                DebugLog.Log("CasusBelli: OnMapEventEnded battle loserDead=" + loserDead +
+                    " loserWounded=" + loserWounded + " winnerDead=" + winnerDead +
+                    " winnerWounded=" + winnerWounded + " start=" + winnerStarting +
+                    "/" + loserStarting + " kingdomTroops=" + kingdomTroops +
+                    " points=" + points);
+                if (points <= 0.0)
                 {
-                    DebugLog.Log("CasusBelli: OnMapEventEnded SAINDO cedo (mortes insuficientes)");
+                    DebugLog.Log("CasusBelli: OnMapEventEnded SAINDO cedo (baixas insuficientes)");
                     return;
                 }
-
-                double basis = Math.Max(
-                    MinKingdomTroops,
-                    KingdomTroops(loserKingdom));
-                double points = Math.Min(
-                    PerBattleCap,
-                    dead / basis * BattleGain);
-
-                DebugLog.Log("CasusBelli: OnMapEventEnded basis=" + basis + " points=" + points);
 
                 AddPoints(war, winnerKingdom.StringId, points, true);
 
@@ -947,7 +978,7 @@ namespace CasusBelli
                 // Detecta se o jogador estava liderando o exército VENCEDOR nesta batalha
                 // (apenas se playerWon e playerInThisBattle e player é o líder do exército)
                 bool playerLedWinningArmy = false;
-                if (playerWon && playerInThisBattle)
+                if (playerInThisBattle)
                 {
                     Army army = MobileParty.MainParty.Army;
                     if (army != null && army.LeaderParty != null && army.LeaderParty.LeaderHero == Hero.MainHero)
@@ -973,6 +1004,7 @@ namespace CasusBelli
                     WarScoreChange = warScoreChange,
                     PlayerWon = playerWon,
                     PlayerInArmy = playerInArmy,
+                    PlayerOnArmy = playerInThisBattle && MobileParty.MainParty.Army != null && !playerLedWinningArmy,
                     EnemyLeaderName = enemyLeaderName
                 };
 
@@ -993,7 +1025,8 @@ namespace CasusBelli
             Settlement settlement,
             WarRecord war,
             string winnerKingdomId,
-            string loserKingdomId)
+            string loserKingdomId,
+            Hero capturerHero)
         {
             try
             {
@@ -1013,8 +1046,9 @@ namespace CasusBelli
                     playerWon = true;
                 }
 
-                // Detecta se o jogador estava no cerco (lado vencedor ou perdedor)
-                bool playerInArmy = IsPlayerInArmy();
+                // Only attribute the conquest to the player if the game identifies the player
+                // as the actual capturer. Mere membership in an army is not siege participation.
+                bool playerInArmy = playerWon && capturerHero == Hero.MainHero;
 
                 // Nome do governador do feudo conquistado (apenas governador oficial, se houver)
                 string governorName = "";
@@ -1280,7 +1314,7 @@ namespace CasusBelli
                 }
 
                 // Prepara relatorio de cerco para ser mostrado 1h depois
-                QueueSiegeReport(settlement, war, newKingdomId, oldKingdomId);
+                QueueSiegeReport(settlement, war, newKingdomId, oldKingdomId, capturerHero);
             }
             catch (Exception)
             {
@@ -1703,6 +1737,14 @@ namespace CasusBelli
 
             foreach (WarRecord war in active)
             {
+                // Saneia saves antigos ou mudancas de posse nao notificadas:
+                // o bonus de ocupacao precisa recomeçar se o alvo for perdido.
+                if (war.IsTerritorial && war.ObjectiveAchievedOnDay >= 0.0)
+                {
+                    Settlement target = Settlement.Find(war.TargetSettlementId);
+                    if (target != null && OwnerKingdomId(target) != war.AttackerKingdomId)
+                        war.ObjectiveAchievedOnDay = -1.0;
+                }
                 GetState(war, true);
 
                 Kingdom a = FindKingdom(war.AttackerKingdomId);

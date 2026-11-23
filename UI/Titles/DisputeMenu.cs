@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using CasusBelli.Disputes;
+using CasusBelli.Managers.Titles;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -10,6 +11,61 @@ namespace CasusBelli.UI.Titles
 {
     internal static class DisputeMenu
     {
+        // TODO release: remove the diagnostic breakdown (keep only qualitative feedback if useful).
+        internal static void PreviewDucalSupport(FeudalTitle title, Hero claimant, Action back)
+        {
+            string block = DisputeAi.DucalSponsorBlock(title, claimant);
+            if (block != null)
+            {
+                InformationManager.ShowInquiry(new InquiryData("Apoio político", block, true, false, "Voltar", "", back, null));
+                return;
+            }
+            var realm = claimant.Clan.Kingdom;
+            var forecasts = realm.Clans.Where(c => c != claimant.Clan && c != title.deJure.Clan && c.Leader != null
+                && RealmPeers.Rank(c) == 2).Select(c =>
+                {
+                    bool accepts = DisputeAi.EvaluateDucalSupport(title, claimant, c, out string reason);
+                    return new { Clan = c, Accepts = accepts, Reason = reason };
+                }).OrderByDescending(f => f.Accepts).ThenBy(f => f.Clan.Name.ToString()).ToList();
+            if (forecasts.Count == 0)
+            {
+                InformationManager.ShowInquiry(new InquiryData("Apoio político", "Não há outros pares plenos elegíveis.",
+                    true, false, "Voltar", "", back, null));
+                return;
+            }
+            var options = forecasts.Select(f => new InquiryElement(f.Clan,
+                $"{f.Clan.Name} — {(f.Accepts ? "favorável" : "não apoiaria")}", null, true, f.Reason)).ToList();
+            Select("Apoio político — " + title.FullName,
+                $"Previsão experimental: {forecasts.Count(f => f.Accepts)}/{forecasts.Count} pares plenos favoráveis. Nenhum compromisso é assumido. Selecione um clã para conferir os motivos.",
+                options, selected =>
+                {
+                    var f = forecasts.First(x => x.Clan == (Clan)selected);
+                    InformationManager.ShowInquiry(new InquiryData(f.Clan.Name.ToString(),
+                        f.Reason, true, false, "Voltar", "", () => PreviewDucalSupport(title, claimant, back), null));
+                }, back);
+        }
+
+        internal static void OpenDucal(FeudalTitle title, Action back)
+        {
+            var behavior = Campaign.Current.GetCampaignBehavior<TitleDisputeBehavior>();
+            var existing = behavior.Active.FirstOrDefault(d => d.Title == title && d.Claimant == Hero.MainHero);
+            if (existing != null) { Details(existing, back); return; }
+            var block = behavior.DucalOpeningBlock(title, Hero.MainHero);
+            if (block != null)
+            {
+                InformationManager.ShowInquiry(new InquiryData("Disputa ducal", block, true, false, "Voltar", "", back, null));
+                return;
+            }
+            InformationManager.ShowInquiry(new InquiryData("Iniciar disputa ducal",
+                "Recrute a maioria absoluta dos outros pares plenos e forme uma coalizão militar capaz de enfrentar o titular. " +
+                "A vitória transfere apenas o ducado; os condados e baronias continuam com seus titulares.",
+                true, true, "Iniciar", "Cancelar", () =>
+                {
+                    var dispute = behavior.OpenDucal(title, Hero.MainHero);
+                    if (dispute != null) Details(dispute, back); else back();
+                }, back));
+        }
+
         internal static void Open(Kingdom kingdom, Action back)
         {
             var behavior = Campaign.Current.GetCampaignBehavior<TitleDisputeBehavior>();
@@ -18,7 +74,7 @@ namespace CasusBelli.UI.Titles
             if (choices.Count == 0)
             {
                 InformationManager.ShowInquiry(new InquiryData("Disputas internas",
-                    "Nenhuma reivindicação entre clãs deste reino por um condado ou baronia controlado pelo titular.",
+                    "Nenhuma disputa interna ativa neste reino.",
                     true, false, "Voltar", "", back, null));
                 return;
             }
@@ -33,6 +89,10 @@ namespace CasusBelli.UI.Titles
             var player = Clan.PlayerClan;
             bool attacking = dispute.Claimant.Clan == player;
             string text = $"Pretendente: {dispute.Claimant.Name}\nTitular: {dispute.Holder.Name}";
+            string asset = dispute.IsDucal ? "ducado" : "título e feudo";
+            if (dispute.IsDucal && !dispute.Demanded)
+                text += $"\nApoios políticos válidos: {PersonalTitleWar.DucalSupporters(dispute)}/{PersonalTitleWar.DucalPeers(dispute)} (maioria absoluta)." +
+                    $"\nTropas da coalizão: {PersonalTitleWar.Troops(dispute, true)} contra {PersonalTitleWar.Troops(dispute, false)}.";
             foreach (bool side in new[] { true, false })
             {
                 string supporters = string.Join(", ", dispute.Offers.Where(o => o.Accepted && o.ForClaimant == side &&
@@ -44,8 +104,8 @@ namespace CasusBelli.UI.Titles
                 text += $"\nGuerra pessoal em andamento. Saldo do pretendente: {dispute.Balance:0}/100 (derrota em -100).";
                 if (attacking || dispute.Holder.Clan == player)
                 {
-                    choices.Add(new InquiryElement("surrender", attacking ? "Render-se e perder a reivindicação" : "Render-se e ceder o título e o feudo", null));
-                    text += "\nPaz branca: o titular conserva o feudo, a reivindicação permanece e há trégua de 60 dias.";
+                    choices.Add(new InquiryElement("surrender", attacking ? "Render-se e perder a reivindicação" : "Render-se e ceder o " + asset, null));
+                    text += "\nPaz branca: o titular conserva o título, a reivindicação permanece e há trégua de 60 dias.";
                     if (dispute.PeaceProposer != null && dispute.PeaceProposer != player)
                     {
                         choices.Add(new InquiryElement("peace", "Aceitar paz branca", null));
@@ -62,7 +122,7 @@ namespace CasusBelli.UI.Titles
                 text += $"\nUltimato entregue. Prazo restante: {days} dias. O silêncio conta como recusa.";
                 if (dispute.Holder.Clan == player)
                 {
-                    choices.Add(new InquiryElement("yield", "Ceder título e feudo", null));
+                    choices.Add(new InquiryElement("yield", "Ceder " + asset, null));
                     choices.Add(new InquiryElement("resist", "Resistir em guerra pessoal", null));
                 }
             }
@@ -70,6 +130,8 @@ namespace CasusBelli.UI.Titles
             {
                 if (attacking)
                 {
+                    if (dispute.IsDucal)
+                        choices.Add(new InquiryElement("abandon", "Abandonar a disputa e perder a reivindicação", null));
                     var reason = PersonalTitleWar.DemandBlock(dispute);
                     if (reason == null)
                         choices.Add(new InquiryElement("demand", $"Exigir título ({PersonalTitleWar.DemandCost} de influência) e encerrar recrutamento", null));
@@ -89,8 +151,14 @@ namespace CasusBelli.UI.Titles
                     choices.Add(new InquiryElement(offer, "Responder a " + sponsor.Name, null));
                 }
             }
-            if (Hero.MainHero == dispute.Realm.Leader && PersonalTitleWar.CanIntervene(dispute))
-                choices.Add(new InquiryElement("intervene","Impor paz por 60 dias · 30 de influência",null));
+            if (Hero.MainHero == dispute.Realm.Leader && dispute.Demanded)
+            {
+                string crownBlock = PersonalTitleWar.InterventionBlock(dispute);
+                if (crownBlock == null)
+                    choices.Add(new InquiryElement("intervene",
+                        $"Impor paz real por 60 dias · {PersonalTitleWar.RoyalInterventionCost} de influência", null));
+                else text += "\nIntervenção da Coroa indisponível: " + crownBlock;
+            }
             if (choices.Count == 0)
             {
                 InformationManager.ShowInquiry(new InquiryData(dispute.Title.FullName.ToString(), text,
@@ -101,12 +169,36 @@ namespace CasusBelli.UI.Titles
             {
                 if (item is string command)
                 {
-                    if (command == "intervene") PersonalTitleWar.Intervene(dispute);
+                    if (command == "intervene")
+                    {
+                        InformationManager.ShowInquiry(new InquiryData("Intervenção soberana",
+                            "Impor uma trégua de 60 dias aos dois clãs? O título e a reivindicação serão preservados. " +
+                            $"Custo: {PersonalTitleWar.RoyalInterventionCost} de influência. " +
+                            $"Uma nova intervenção neste reino ficará bloqueada por {PersonalTitleWar.RoyalInterventionCooldownDays} dias.",
+                            true, true, "Impor paz", "Cancelar",
+                            () => { PersonalTitleWar.Intervene(dispute); Details(dispute, back); },
+                            () => Details(dispute, back)));
+                        return;
+                    }
                     else if (command == "demand") PersonalTitleWar.Demand(dispute);
+                    else if (command == "abandon")
+                    {
+                        InformationManager.ShowInquiry(new InquiryData("Abandonar disputa", "A reivindicação ducal será perdida.",
+                            true, true, "Abandonar", "Cancelar", () =>
+                            {
+                                if (dispute.IsActive && !dispute.Demanded && dispute.Claimant.Clan == player)
+                                {
+                                    dispute.Title.RemoveClaim(dispute.Claimant);
+                                    dispute.Finished = true;
+                                }
+                                back();
+                            }, () => Details(dispute, back)));
+                        return;
+                    }
                     else if (command == "surrender")
                     {
                         InformationManager.ShowInquiry(new InquiryData("Confirmar rendição", attacking ?
-                            "Seu clã perderá a reivindicação." : "O pretendente receberá o título e o feudo.",
+                            "Seu clã perderá a reivindicação." : "O pretendente receberá o " + asset + ".",
                             true, true, "Render-se", "Cancelar", () => { PersonalPeace.Surrender(dispute, player); Details(dispute, back); },
                             () => Details(dispute, back)));
                         return;
@@ -119,10 +211,17 @@ namespace CasusBelli.UI.Titles
                 }
                 if (item is Clan clan) { dispute.Send(clan, attacking); Details(dispute, back); return; }
                 var offer = (SupportOffer)item;
+                if (dispute.IsDucal && offer.ForClaimant && !DisputeAi.EvaluateDucalSupport(dispute.Title, dispute.Claimant, player, out string reason))
+                {
+                    InformationManager.ShowInquiry(new InquiryData("Pedido de apoio", "A proposta não atende aos critérios políticos.\n" + reason,
+                        true, true, "Recusar", "Voltar", () => { if (dispute.CanAnswer(offer)) offer.Answer(false); Details(dispute, back); },
+                        () => Details(dispute, back)));
+                    return;
+                }
                 InformationManager.ShowInquiry(new InquiryData("Pedido de apoio",
                     $"Comprometer seu clã com {dispute.Sponsor(offer.ForClaimant).Name} na disputa por {dispute.Title.FullName}?",
                     true, true, "Apoiar", "Recusar",
-                    () => { if (dispute.CanAnswer(offer)) offer.Answer(true); Details(dispute, back); },
+                    () => { if (dispute.CanAnswer(offer) && (!dispute.IsDucal || !offer.ForClaimant || DisputeAi.EvaluateDucalSupport(dispute.Title, dispute.Claimant, player, out _))) offer.Answer(true); Details(dispute, back); },
                     () => { if (dispute.CanAnswer(offer)) offer.Answer(false); Details(dispute, back); }));
             }, back);
         }

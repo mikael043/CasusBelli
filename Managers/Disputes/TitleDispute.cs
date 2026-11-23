@@ -45,7 +45,10 @@ namespace CasusBelli.Disputes
         [SaveableProperty(11)] public Clan PeaceProposer { get; internal set; }
         [SaveableProperty(12)] public CampaignTime TruceEnds { get; internal set; }
         [SaveableProperty(13)] public bool MediationAttempted { get; internal set; }
-        public bool CanDemand => IsActive && !Demanded && Title.GetHeroClaim(Claimant) == ClaimType.Fabricated;
+        [SaveableProperty(14)] public bool Finished { get; internal set; }
+        [SaveableProperty(15)] public CampaignTime WarStartedAt { get; internal set; }
+        public bool IsDucal => Title?.TitleType == TitleType.Dukedom;
+        public bool CanDemand => IsActive && !Demanded && (IsDucal ? Title.HeroHasValidClaim(Claimant) : Title.GetHeroClaim(Claimant) == ClaimType.Fabricated);
 
         public TitleDispute(FeudalTitle title, Hero claimant)
         {
@@ -56,20 +59,26 @@ namespace CasusBelli.Disputes
             Offers = new List<SupportOffer>();
         }
 
-        public bool IsActive => Realm != null && Claimant != null && Holder != null &&
+        public bool IsActive => !Finished && Realm != null && Claimant != null && Holder != null &&
             !Claimant.IsDead && !Holder.IsDead && Claimant.Clan?.Kingdom == Realm && Holder.Clan?.Kingdom == Realm &&
-            Claimant.Clan != Holder.Clan && Title.deJure == Holder && Title.Fief?.OwnerClan == Holder.Clan &&
-            (Title.TitleType == TitleType.County || Title.TitleType == TitleType.Barony) &&
-            Title.GetHeroClaim(Claimant) != ClaimType.None;
+            Claimant.Clan != Holder.Clan && Title?.deJure == Holder &&
+            (IsDucal ? Claimant.Clan.Leader == Claimant && Holder.Clan.Leader == Holder &&
+                !Claimant.Clan.IsEliminated && !Holder.Clan.IsEliminated && !Claimant.Clan.IsUnderMercenaryService &&
+                !Holder.Clan.IsUnderMercenaryService && Title.HeroHasValidClaim(Claimant) :
+                Title.Fief?.OwnerClan == Holder.Clan &&
+                (Title.TitleType == TitleType.County || Title.TitleType == TitleType.Barony) &&
+                Title.GetHeroClaim(Claimant) != ClaimType.None);
 
         public Hero Sponsor(bool forClaimant) => forClaimant ? Claimant : Holder;
 
         public bool Eligible(Clan clan) => clan?.Leader != null && !clan.IsEliminated &&
-            clan.Kingdom == Realm && clan != Claimant.Clan && clan != Holder.Clan && !clan.IsUnderMercenaryService;
+            clan.Kingdom == Realm && clan != Claimant.Clan && clan != Holder.Clan && !clan.IsUnderMercenaryService && (!IsDucal || RealmPeers.Rank(clan) == 2);
 
         public bool CanSend(Clan recipient, bool forClaimant)
         {
-            if (Demanded || !IsActive || !Eligible(recipient)) return false;
+            if (Demanded || !IsActive || !Eligible(recipient) || TitleDisputeBehavior.DucalCommitmentBlocked(recipient, this)) return false;
+            if (IsDucal && (TruceEnds.IsFuture || (forClaimant && DisputeAi.DucalSponsorBlock(Title, Claimant) != null) ||
+                Offers.Any(o => o.Recipient == recipient && o.ForClaimant == forClaimant && o.Answered))) return false;
             // One dispatch per side per week, including the three travel days.
             return !Offers.Any(o =>
                 (o.ForClaimant == forClaimant && o.Arrival.ElapsedDaysUntilNow < 4) ||
@@ -84,7 +93,7 @@ namespace CasusBelli.Disputes
         }
 
         public bool CanAnswer(SupportOffer offer) => !Demanded && IsActive && Offers.Contains(offer) &&
-            Eligible(offer.Recipient) && !offer.Answered && !offer.Arrival.IsFuture &&
+            Eligible(offer.Recipient) && !TitleDisputeBehavior.DucalCommitmentBlocked(offer.Recipient, this) && (!IsDucal || !TruceEnds.IsFuture) && !offer.Answered && !offer.Arrival.IsFuture &&
             !Offers.Any(o => o.Recipient == offer.Recipient && o.Accepted);
 
         public int Affinity(Clan clan, bool forClaimant) =>

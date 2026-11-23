@@ -259,6 +259,7 @@
   <ItemGroup>
     <Content Include="Modules\CasusBelli\SubModule.xml" />
     <Content Include="Modules\CasusBelli\ModuleData\titles.xml" />
+    <Content Include="Modules\CasusBelli\ModuleData\CBDATA\CB_casus_belli.xml" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />

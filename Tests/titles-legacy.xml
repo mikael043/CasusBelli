@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<titles autoGenerate="true">
+    <!-- Vlandia Feudal Titles -->
+    <kingdom faction="vlandia" government="feudal" succession="hereditary" inheritance="seniority" genderLaw="agnatic" deJure="lord_4_1">
+        <duchy name="Sargotha" deJure="lord_4_1">
+            <county settlement="town_V1" deJure="lord_4_1">
+                <barony settlement="castle_V7" deJure="lord_4_1" />
+            </county>
+            <county settlement="town_V7" deJure="lord_4_16">
+                <barony settlement="castle_V1" deJure="lord_V11_l" />
+            </county>
+        </duchy>
+        <duchy name="Biscanend" deJure="lord_4_6">
+            <county settlement="town_V6" deJure="lord_4_6" />
+            <county settlement="town_V5" deJure="lord_4_1">
+                <barony settlement="castle_V2" deJure="lord_4_27" />
+            </county>
+        </duchy>
+    </kingdom>
+
+    <!-- Battania Feudal Titles -->
+    <kingdom faction="battania" government="tribal" succession="hereditary" inheritance="seniority" genderLaw="agnatic" deJure="lord_5_1">
+        <duchy name="Ardus Dunnath" deJure="lord_5_1">
+            <county settlement="town_B5" deJure="lord_5_16">
+                <barony settlement="castle_B1" deJure="lord_B8_l" />
+            </county>
+        </duchy>
+    </kingdom>
+
+    <!-- Sturgia Feudal Titles -->
+    <kingdom faction="sturgia" government="tribal" succession="hereditary" inheritance="seniority" genderLaw="agnatic" deJure="lord_2_1">
+        <duchy name="Nordden" deJure="lord_2_1">
+            <county settlement="town_S2" deJure="lord_2_1">
+                <barony settlement="castle_S8" deJure="lord_2_1" />
+            </county>
+        </duchy>
+    </kingdom>
+
+    <!-- Aserai Feudal Titles -->
+    <kingdom faction="aserai" government="tribal" succession="hereditary" inheritance="seniority" genderLaw="agnatic" deJure="lord_6_1">
+        <duchy name="Khamsin" deJure="lord_6_1">
+            <county settlement="town_A7" deJure="lord_6_1">
+                <barony settlement="castle_A1" deJure="lord_6_1" />
+            </county>
+        </duchy>
+    </kingdom>
+
+    <!-- Empire Feudal Titles -->
+    <kingdom faction="empire" government="feudal" succession="hereditary" inheritance="primogeniture" genderLaw="agnatic_cognatic" deJure="lord_1_1">
+        <duchy name="Ralam" deJure="lord_1_1">
+            <county settlement="town_EN4" deJure="lord_1_1">
+                <barony settlement="castle_EN5" deJure="lord_1_1" />
+            </county>
+        </duchy>
+    </kingdom>
+
+    <!-- Khuzait Feudal Titles -->
+    <kingdom faction="khuzait" government="tribal" succession="hereditary" inheritance="seniority" genderLaw="agnatic" deJure="lord_3_1">
+        <duchy name="Khorasic" deJure="lord_3_1">
+            <county settlement="town_K2" deJure="lord_3_1">
+                <barony settlement="castle_K1" deJure="lord_3_1" />
+            </county>
+        </duchy>
+    </kingdom>
+</titles>

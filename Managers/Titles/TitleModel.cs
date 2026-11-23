@@ -72,6 +72,53 @@ namespace CasusBelli.Managers.Titles
             return action;
         }
 
+        // Only direct de jure county seats count; baronies and legal claims do not.
+        internal static void GetDucalCountyControl(FeudalTitle title, Clan clan, out int controlled, out int total)
+        {
+            var counties = title?.Vassals?.Where(v => v != null && v.TitleType == TitleType.County).Distinct().ToList();
+            total = counties?.Count ?? 0;
+            controlled = clan == null ? 0 : counties?.Count(v => v.Fief != null && v.Fief.OwnerClan == clan) ?? 0;
+        }
+
+        internal static bool HasDucalMajority(int controlled, int total) =>
+            total > 0 && controlled >= 0 && controlled <= total && (long)controlled * 100 >= (long)total * 51;
+
+        // TODO release: remove diagnostic scores from the player-facing UI after balancing.
+        private static (int Right, int Prestige, int Landed, int Territory, int Controlled, int Total) DucalLegitimacy(FeudalTitle title, Hero hero, bool projected = false)
+        {
+            if (title == null || hero?.Clan == null) return (0, 0, 0, 0, 0, 0);
+            GetDucalCountyControl(title, hero.Clan, out int controlled, out int total);
+            var claim = title.GetHeroClaim(hero);
+            if (projected && !title.HeroHasValidClaim(hero)) claim = ClaimType.Fabricated;
+            int right = title.deJure == hero ? 25 : claim == ClaimType.PreviousOwner ? 25 :
+                claim == ClaimType.ClanSplit ? 20 : claim == ClaimType.DeFacto ? 15 :
+                claim == ClaimType.Fabricated ? 10 : 0;
+            int prestige = Math.Min(25, Math.Max(0, hero.Clan.Tier) * 5);
+            int landed = hero.Clan.Fiefs.Count > 0 ? 20 : 0;
+            int territory = total > 0 ? 30 * controlled / total : 0;
+            return (right, prestige, landed, territory, controlled, total);
+        }
+
+        internal static int DucalLegitimacyScore(FeudalTitle title, Hero hero)
+        {
+            var f = DucalLegitimacy(title, hero);
+            return f.Right + f.Prestige + f.Landed + f.Territory;
+        }
+
+        internal static int ProjectedDucalLegitimacyScore(FeudalTitle title, Hero hero)
+        {
+            var f = DucalLegitimacy(title, hero, true);
+            return f.Right + f.Prestige + f.Landed + f.Territory;
+        }
+
+        internal static string DescribeDucalLegitimacy(FeudalTitle title, Hero hero)
+        {
+            if (hero?.Clan == null) return "Sem clã reconhecido.";
+            var f = DucalLegitimacy(title, hero);
+            return $"{f.Right + f.Prestige + f.Landed + f.Territory}/100 (direito {f.Right}/25; prestígio {f.Prestige}/25; " +
+                $"base fundiária {f.Landed}/20; domínio ducal {f.Territory}/30 — {f.Controlled}/{f.Total} condados).";
+        }
+
         // Usurpar título
         public virtual TitleAction GetUsurpAction(FeudalTitle title, Hero taker)
         {
@@ -102,7 +149,23 @@ namespace CasusBelli.Managers.Titles
 
             // Verificar claim válido OU controle de terra
             bool hasValidClaim = title.HeroHasValidClaim(taker);
-            bool holdsLand = title.Fief != null && title.Fief.OwnerClan == taker.Clan;
+            bool holdsLand = taker.Clan != null && title.Fief != null && title.Fief.OwnerClan == taker.Clan;
+            if (title.TitleType == TitleType.Dukedom)
+            {
+                GetDucalCountyControl(title, taker.Clan, out int controlled, out int total);
+                holdsLand = HasDucalMajority(controlled, total);
+
+                // A claim confers a legal right, not territorial control.
+                if (!holdsLand)
+                {
+                    action.Possible = false;
+                    string claim = hasValidClaim
+                        ? "Sua reivindicação madura continua válida, mas não transfere o título por si só."
+                        : "Uma reivindicação madura não substitui a maioria territorial.";
+                    action.Reason = new TextObject($"Para usurpar o ducado, controle pelo menos 51% dos condados ({controlled}/{total}). {claim}");
+                    return action;
+                }
+            }
 
             // Verificar suserano
             var suzerain = TitleManager.Instance.GetImmediateSuzerain(title);

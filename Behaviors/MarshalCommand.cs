@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using CasusBelli.Managers.Titles;
+using CasusBelli.Managers.Titles.Governments;
 using TaleWorlds.CampaignSystem.ViewModelCollection.ArmyManagement;
 using HarmonyLib;
 using TaleWorlds.CampaignSystem;
@@ -14,6 +15,30 @@ namespace CasusBelli
     internal static class MarshalCommand
     {
         internal const string Restriction = "O soberano e o marechal convocam grupos do reino. Um duque pode convocar os nobres dos condados do seu ducado.";
+
+        internal static int ServiceDaysForLevyLevel(int level)
+        {
+            level = Math.Max(1, Math.Min(4, level));
+            return level * 10;
+        }
+
+        internal static FeudalTitle ServiceLawTitle(Kingdom realm, Hero commander, Hero summoned)
+        {
+            if (realm == null || commander == null) return null;
+            var titles = TitleManager.Instance;
+            if (realm.Leader == commander || Campaign.Current?.GetCampaignBehavior<RoyalCouncil>()?.Member(realm, CouncilOffice.Marshal) == commander.StringId)
+                return titles.GetSovereignTitle(realm);
+            var county = titles.GetAllDeJure(summoned?.Clan).FirstOrDefault(t => t.TitleType == TitleType.County &&
+                titles.GetDuchy(t)?.deJure == commander);
+            return county == null ? titles.GetAllDeJure(commander).FirstOrDefault(t => t.TitleType == TitleType.Dukedom) : titles.GetDuchy(county);
+        }
+
+        internal static int ServiceDays(Kingdom realm, Hero commander, Hero summoned)
+        {
+            var title = ServiceLawTitle(realm, commander, summoned);
+            var law = title?.Contract?.DemesneLaws?.FirstOrDefault(l => l.LawType == DemesneLaw.DemesneLawType.Levies);
+            return ServiceDaysForLevyLevel(law?.Level ?? 2);
+        }
 
         private static bool RealmCommand(Kingdom realm, Hero commander) =>
             realm.Leader == commander || Campaign.Current?.GetCampaignBehavior<RoyalCouncil>()?.Member(realm, CouncilOffice.Marshal) == commander.StringId;
