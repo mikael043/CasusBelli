@@ -76,23 +76,23 @@ namespace CasusBelli.UI.Titles
         // The hierarchy is embedded in the existing kingdom tab. Only one branch page is rendered.
         private sealed class EmbeddedHierarchy
         {
-            private const int PageSize = 5;
             private readonly Widget _body;
             private readonly Widget _left;
             private readonly Widget _right;
             private readonly ButtonWidget _template;
             private readonly TextWidget _caption;
-            private readonly Dictionary<Hero, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.CharacterImageIdentifierVM> _portraits =
-                new Dictionary<Hero, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.CharacterImageIdentifierVM>();
             private readonly Dictionary<Kingdom, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.BannerImageIdentifierVM> _banners =
                 new Dictionary<Kingdom, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.BannerImageIdentifierVM>();
-            private readonly Stack<FeudalTitle> _parents = new Stack<FeudalTitle>();
+            private readonly HashSet<FeudalTitle> _expanded = new HashSet<FeudalTitle>();
+            private FeudalHierarchyTree _tree;
+            private ScrollablePanel _scroll;
+            private ListPanel _items;
+            private TextWidget _selectionInfo;
+            private TextWidget _countInfo;
             private Kingdom _realm;
             private FeudalTitle _title;
             private bool _deFacto;
-            private int _page;
             private int _realmPage;
-            private readonly Dictionary<FeudalTitle, FeudalTitle> _legalParents = new Dictionary<FeudalTitle, FeudalTitle>();
 
             internal EmbeddedHierarchy(Widget panel, ButtonWidget template, TextWidget caption)
             {
@@ -119,56 +119,51 @@ namespace CasusBelli.UI.Titles
             internal void Hide()
             {
                 _body.IsVisible = false;
-                _right.RemoveAllChildren(); _left.RemoveAllChildren();
-                _portraits.Clear(); _banners.Clear();
+                _right.RemoveAllChildren();
+                _left.RemoveAllChildren();
+                _scroll = null;
+                _items = null;
+                _selectionInfo = null;
+                _countInfo = null;
+                _banners.Clear();
             }
 
             private void SelectRealm(Kingdom kingdom)
             {
-                _realm = kingdom; _parents.Clear(); _page = 0;
-                _legalParents.Clear();
-                foreach (var t in TitleManager.Instance.AllTitles)
-                    if (t?.Vassals != null)
-                        foreach (var child in t.Vassals)
-                            if (child != null && !_legalParents.ContainsKey(child)) _legalParents.Add(child, t);
-                var roots = TitleManager.Instance.GetSovereignTitleList(kingdom).Where(t => t != null).ToList();
-                _title = roots.Count == 1 ? roots[0] : null;
+                if (kingdom == null || TitleManager.Instance == null) return;
+                _realm = kingdom;
+                RebuildModel(true);
                 Draw();
+            }
+
+            private void RebuildModel(bool expandAll)
+            {
+                var manager = TitleManager.Instance;
+                _tree = FeudalHierarchyTree.Build(
+                    _realm, _deFacto, manager.GetSovereignTitleList(_realm),
+                    manager.AllTitles);
+                if (expandAll) _expanded.Clear();
+                _expanded.RemoveWhere(t => !_tree.Titles.Contains(t));
+                // Open the crown and duchies by default. Counties, baronies
+                // and lordships remain one click away, keeping large kingdoms fast.
+                if (expandAll)
+                    foreach (var t in _tree.Titles)
+                        if (t.TitleType <= TitleType.Dukedom) _expanded.Add(t);
+                if (_title == null || !_tree.Titles.Contains(_title))
+                    _title = _tree.Roots.FirstOrDefault();
             }
 
             private void ChangeMode(bool deFacto)
             {
+                if (_deFacto == deFacto || _realm == null) return;
                 _deFacto = deFacto;
-                if (_realm != null) SelectRealm(_realm);
+                RebuildModel(true);
+                Draw();
             }
 
-            private Hero Owner(FeudalTitle t) => t == null ? null : _deFacto ? t.DeFactoHolder : t.deJure;
-            private Kingdom EffectiveRealm(FeudalTitle t) => t?.DeFactoHolder?.Clan?.Kingdom;
-            private List<FeudalTitle> Children()
-            {
-                var manager = TitleManager.Instance;
-                var roots = manager.GetSovereignTitleList(_realm);
-                if (_title == null) return roots.Where(t => t != null).ToList();
-                if (!_deFacto) return (_title.Vassals ?? new List<FeudalTitle>()).Where(t => t != null && t != _title && !_parents.Contains(t)).Distinct().ToList();
-                // Preserve immediate legal links if both ends remain in the same effective realm.
-                // An occupied title whose parent remains abroad falls directly under the effective crown.
-                return manager.AllTitles.Where(t => {
-                    if (t == null || t == _title || _parents.Contains(t) || roots.Contains(t) || EffectiveRealm(t) != _realm) return false;
-                    _legalParents.TryGetValue(t, out var parent);
-                    if (parent != null && (EffectiveRealm(parent) == _realm || roots.Contains(parent))) return parent == _title;
-                    return _title == manager.GetSovereignTitle(_realm);
-                }).Distinct().ToList();
-            }
+            private Hero Owner(FeudalTitle t) =>
+                t == null ? null : _deFacto ? t.DeFactoHolder : t.deJure;
 
-            private void Descend(FeudalTitle t)
-            {
-                _parents.Push(_title); _title = t; _page = 0; Draw();
-            }
-            private void Ascend()
-            {
-                if (_parents.Count == 0) return;
-                _title = _parents.Pop(); _page = 0; Draw();
-            }
             private TextWidget Label(Widget parent, string value, float width, float height, float top = 0)
             {
                 var label = new TextWidget(parent.Context) { WidthSizePolicy = width > 0 ? SizePolicy.Fixed : SizePolicy.StretchToParent,
@@ -217,81 +212,234 @@ namespace CasusBelli.UI.Titles
                     ImageId = id.Id, AdditionalArgs = id.AdditionalArgs, TextureProviderName = id.TextureProviderName };
                 parent.AddChild(img);
             }
-            private void Portrait(Widget parent, Hero hero)
+            private ButtonWidget TreeButton(Widget parent, string text, System.Action action,
+                float width, bool stretch = false)
             {
-                if (hero?.CharacterObject == null) return;
-                try
+                var b = CreateButton(_template, _caption, "", text, action);
+                b.WidthSizePolicy = stretch ? SizePolicy.StretchToParent : SizePolicy.Fixed;
+                if (!stretch) b.SuggestedWidth = width;
+                b.HeightSizePolicy = SizePolicy.Fixed;
+                b.SuggestedHeight = 39;
+                b.VerticalAlignment = VerticalAlignment.Center;
+                b.PositionYOffset = 0;
+                var label = b.FindChild(w => w is TextWidget) as TextWidget;
+                if (label != null)
                 {
-                    if (!_portraits.TryGetValue(hero, out var id))
-                        _portraits[hero] = id = new TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.CharacterImageIdentifierVM(CharacterCode.CreateFrom(hero.CharacterObject));
-                    var img = new TaleWorlds.MountAndBlade.GauntletUI.Widgets.ImageIdentifierWidget(parent.Context) {
-                        WidthSizePolicy = SizePolicy.Fixed, HeightSizePolicy = SizePolicy.Fixed, SuggestedWidth = 105, SuggestedHeight = 82,
-                        HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, MarginTop = 5,
-                        DoNotAcceptEvents = true, ImageId = id.Id, AdditionalArgs = id.AdditionalArgs, TextureProviderName = id.TextureProviderName };
-                    parent.AddChild(img);
+                    label.HorizontalAlignment = HorizontalAlignment.Left;
+                    label.WidthSizePolicy = SizePolicy.StretchToParent;
+                    label.MarginLeft = 10;
+                    label.MarginRight = 6;
+                    label.CanBreakWords = false;
                 }
-                catch (System.Exception ex) { DebugLog.Log("[Hierarchy] Portrait: " + ex.Message); }
+                parent.AddChild(b);
+                return b;
             }
-            private void Card(Widget parent, FeudalTitle title, string name, Hero owner, System.Action click, float width, bool connector)
+
+            private void SelectTitle(FeudalTitle title)
             {
-                var slot = new Widget(parent.Context) {
-                    WidthSizePolicy = SizePolicy.Fixed, HeightSizePolicy = SizePolicy.Fixed, SuggestedWidth = width, SuggestedHeight = connector ? 178 : 154,
-                    HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, MarginLeft = 6, MarginRight = 6 };
-                parent.AddChild(slot);
-                if (connector) Line(slot, 2, 24, 0);
-                var card = new ButtonWidget(parent.Context) {
-                    WidthSizePolicy = SizePolicy.Fixed, HeightSizePolicy = SizePolicy.Fixed, SuggestedWidth = width, SuggestedHeight = 154,
-                    HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, MarginTop = connector ? 24 : 0,
-                    Brush = parent.Context.GetBrush("Encyclopedia.SubPage.Element"), UpdateChildrenStates = true, DoNotPassEventsToChildren = true };
-                slot.AddChild(card);
-                Portrait(card, owner);
-                Label(card, name, width - 6, 34, 84);
-                Label(card, owner?.Name?.ToString() ?? "Vago", width - 6, 30, 117);
-                card.ClickEventHandlers.Add(w => click());
+                _title = title;
+                UpdateSelection();
             }
+
+            private void UpdateSelection()
+            {
+                if (_selectionInfo == null) return;
+                _selectionInfo.Text = _title == null ? "Nenhum título selecionado" :
+                    $"{_title.FullName}  |  Titular {(_deFacto ? "atual" : "de jure")}: {Owner(_title)?.Name?.ToString() ?? "Vago"}";
+            }
+
+            private void Toggle(FeudalTitle title)
+            {
+                if (!_expanded.Remove(title)) _expanded.Add(title);
+                DrawTree();
+            }
+
+            private void ExpandAll(bool expand)
+            {
+                _expanded.Clear();
+                if (expand && _tree != null)
+                    foreach (var title in _tree.Titles) _expanded.Add(title);
+                DrawTree();
+            }
+
+            // Renders the complete expanded outline into one native scrollable panel.
+            // The scrollbar and the panel survive expansion, preserving scroll position.
+            private void DrawTree()
+            {
+                if (_items == null || _tree == null) return;
+                _items.RemoveAllChildren();
+                var visible = _tree.Visible(_expanded);
+                if (_countInfo != null)
+                    _countInfo.Text = $"{visible.Count} de {_tree.Count} títulos visíveis  •  {(_deFacto ? "Controle de facto" : "Hierarquia de jure")}";
+
+                foreach (var entry in visible)
+                {
+                    var title = entry.Title;
+                    var line = new ListPanel(_items.Context)
+                    {
+                        Id = "CbTitleRow_" + (title.StringId ?? ""),
+                        WidthSizePolicy = SizePolicy.StretchToParent,
+                        HeightSizePolicy = SizePolicy.Fixed,
+                        SuggestedHeight = 42,
+                        StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.HorizontalLeftToRight }
+                    };
+                    _items.AddChild(line);
+
+                    if (entry.Depth > 0)
+                        line.AddChild(new Widget(line.Context)
+                        {
+                            WidthSizePolicy = SizePolicy.Fixed,
+                            HeightSizePolicy = SizePolicy.Fixed,
+                            SuggestedWidth = System.Math.Min(180, entry.Depth * 26),
+                            SuggestedHeight = 39,
+                            DoNotAcceptEvents = true
+                        });
+
+                    var toggle = TreeButton(line,
+                        entry.ChildCount == 0 ? "·" : (_expanded.Contains(title) ? "−" : "+"),
+                        () => Toggle(title), 38);
+                    toggle.Id = "CbToggleTitle_" + (title.StringId ?? "");
+                    toggle.IsEnabled = entry.ChildCount > 0;
+
+                    string person = Owner(title)?.Name?.ToString() ?? "Vago";
+                    string name = $"{title.FullName}  •  {person}";
+                    var button = TreeButton(line, name, () => SelectTitle(title), 0, true);
+                    button.Id = "CbSelectTitle_" + (title.StringId ?? "");
+                    TreeButton(line, "Detalhes", () =>
+                    {
+                        SelectTitle(title);
+                        Details();
+                    }, 100);
+                }
+            }
+
             private void Draw()
             {
-                if (_realm == null) return;
-                _left.RemoveAllChildren(); _right.RemoveAllChildren();
-                var kingdoms = Kingdom.All.Where(k => !k.IsEliminated).OrderBy(k => k.Name.ToString()).ToList();
+                if (_realm == null || _tree == null) return;
+                _left.RemoveAllChildren();
+                _right.RemoveAllChildren();
+                _scroll = null;
+                _items = null;
+
+                var kingdoms = Kingdom.All.Where(k => !k.IsEliminated)
+                    .OrderBy(k => k.Name.ToString()).ToList();
                 Label(_left, "REINOS", 0, 44);
                 const int realmPageSize = 9;
-                for (int i = 0; i < realmPageSize && _realmPage * realmPageSize + i < kingdoms.Count; i++)
+                _realmPage = System.Math.Max(0, System.Math.Min(_realmPage,
+                    System.Math.Max(0, (kingdoms.Count - 1) / realmPageSize)));
+                for (int i = 0; i < realmPageSize &&
+                    _realmPage * realmPageSize + i < kingdoms.Count; i++)
                 {
                     var kingdom = kingdoms[_realmPage * realmPageSize + i];
-                    var b = Button(_left, kingdom.Name.ToString(), () => SelectRealm(kingdom), 270, 54);
-                    b.HorizontalAlignment = HorizontalAlignment.Center;
-                    b.MarginTop = 50 + i * 56;
-                    Banner(b, kingdom, 36);
-                    b.IsEnabled = kingdom != _realm;
+                    var button = Button(_left, kingdom.Name.ToString(),
+                        () => SelectRealm(kingdom), 270, 54);
+                    button.HorizontalAlignment = HorizontalAlignment.Center;
+                    button.MarginTop = 50 + i * 56;
+                    Banner(button, kingdom, 36);
+                    button.IsEnabled = kingdom != _realm;
                 }
-                var nav = Row(_left, 565);
-                var prev = Button(nav, "<", () => { _realmPage--; Draw(); }, 65); prev.IsEnabled = _realmPage > 0;
-                var next = Button(nav, ">", () => { _realmPage++; Draw(); }, 65); next.IsEnabled = (_realmPage + 1) * realmPageSize < kingdoms.Count;
+                var navigation = Row(_left, 565);
+                Button(navigation, "<", () => { _realmPage--; Draw(); }, 65)
+                    .IsEnabled = _realmPage > 0;
+                Button(navigation, ">", () => { _realmPage++; Draw(); }, 65)
+                    .IsEnabled = (_realmPage + 1) * realmPageSize < kingdoms.Count;
 
-                Label(_right, "Hierarquia — " + _realm.Name, 0, 50);
-                var mode = Row(_right, 55);
-                var legal = Button(mode, "De jure", () => ChangeMode(false), 160); legal.IsEnabled = _deFacto;
-                var actual = Button(mode, "De facto", () => ChangeMode(true), 160); actual.IsEnabled = !_deFacto;
-                var top = Row(_right, 118);
-                Card(top, _title, _title?.FullName?.ToString() ?? _realm.Name.ToString(), _title != null ? Owner(_title) : _realm.Leader, Details, 280, false);
-                var children = Children().OrderBy(t => t.TitleType).ThenBy(t => t.ShortName?.ToString()).ToList();
-                _page = System.Math.Min(_page, System.Math.Max(0, (children.Count - 1) / PageSize));
-                var visible = children.Skip(_page * PageSize).Take(PageSize).ToList();
-                if (visible.Count > 0)
+                Label(_right, "ÁRVORE FEUDAL  •  " + _realm.Name, 0, 48);
+                var mode = Row(_right, 49);
+                Button(mode, "De jure", () => ChangeMode(false), 154).IsEnabled = _deFacto;
+                Button(mode, "De facto", () => ChangeMode(true), 154).IsEnabled = !_deFacto;
+                var toolbar = Row(_right, 100);
+                Button(toolbar, "Expandir tudo", () => ExpandAll(true), 166).Id = "CbExpandAll";
+                Button(toolbar, "Recolher tudo", () => ExpandAll(false), 166).Id = "CbCollapseAll";
+                Button(toolbar, "Atualizar", () => { RebuildModel(false); Draw(); }, 146);
+                _countInfo = Label(_right, "", 0, 30, 149);
+
+                // Same native ScrollablePanel / ClipRect / InnerPanel / scrollbar
+                // arrangement used by Bannerlord's own initial menu.
+                var viewport = new Widget(_right.Context)
                 {
-                    Line(_right, 2, 42, 272);
-                    if (visible.Count > 1) Line(_right, (visible.Count - 1) * 210, 2, 314);
-                    var row = Row(_right, 314);
-                    foreach (var child in visible)
-                        Card(row, child, child.FullName.ToString(), Owner(child), () => Descend(child), 198, true);
-                }
-                Label(_right, children.Count == 0 ? "Sem títulos subordinados" : $"{_page * PageSize + 1}–{System.Math.Min((_page + 1) * PageSize, children.Count)} de {children.Count} títulos", 0, 40, 500);
-                var controls = Row(_right, 550);
-                Button(controls, "Subir nível", Ascend, 170).IsEnabled = _parents.Count > 0;
-                Button(controls, "Anterior", () => { _page--; Draw(); }, 145).IsEnabled = _page > 0;
-                Button(controls, "Próxima", () => { _page++; Draw(); }, 145).IsEnabled = (_page + 1) * PageSize < children.Count;
-                Button(controls, "Atos e detalhes", Details, 210).IsEnabled = _title != null;
+                    Id = "CbHierarchyViewport",
+                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    HeightSizePolicy = SizePolicy.StretchToParent,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    MarginTop = 185,
+                    MarginBottom = 112,
+                    MarginLeft = 10,
+                    MarginRight = 12
+                };
+                _right.AddChild(viewport);
+                _scroll = new ScrollablePanel(viewport.Context)
+                {
+                    Id = "CbHierarchyScroll",
+                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    HeightSizePolicy = SizePolicy.StretchToParent,
+                    AutoHideScrollBars = true,
+                    AutoAdjustScrollbarHandleSize = true,
+                    OnlyAcceptScrollEventIfCanScroll = true
+                };
+                viewport.AddChild(_scroll);
+                var clip = new Widget(viewport.Context)
+                {
+                    Id = "CbHierarchyClip",
+                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    HeightSizePolicy = SizePolicy.StretchToParent,
+                    MarginRight = 17,
+                    ClipContents = true
+                };
+                _scroll.AddChild(clip);
+                _items = new ListPanel(viewport.Context)
+                {
+                    Id = "CbHierarchyTree",
+                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    HeightSizePolicy = SizePolicy.CoverChildren,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.VerticalTopToBottom }
+                };
+                clip.AddChild(_items);
+                _scroll.ClipRect = clip;
+                _scroll.InnerPanel = _items;
+
+                var scrollbar = new ScrollbarWidget(viewport.Context)
+                {
+                    WidthSizePolicy = SizePolicy.Fixed,
+                    SuggestedWidth = 12,
+                    HeightSizePolicy = SizePolicy.StretchToParent,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    AlignmentAxis = AlignmentAxis.Vertical,
+                    MinValue = 0,
+                    MaxValue = 100
+                };
+                var handle = new Widget(viewport.Context)
+                {
+                    WidthSizePolicy = SizePolicy.Fixed,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedWidth = 7,
+                    SuggestedHeight = 28,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Color = Color.FromUint(0xC3A05EFF)
+                };
+                if (viewport.Context.SpriteData != null)
+                    handle.Sprite = viewport.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+                scrollbar.AddChild(handle);
+                scrollbar.Handle = handle;
+                viewport.AddChild(scrollbar);
+                _scroll.VerticalScrollbar = scrollbar;
+
+                _selectionInfo = Label(_right, "", 0, 34);
+                _selectionInfo.Id = "CbSelectedTitle";
+                _selectionInfo.VerticalAlignment = VerticalAlignment.Bottom;
+                _selectionInfo.MarginTop = 0;
+                _selectionInfo.MarginBottom = 63;
+                UpdateSelection();
+
+                var footer = Row(_right, 0);
+                footer.VerticalAlignment = VerticalAlignment.Bottom;
+                footer.MarginTop = 0;
+                footer.MarginBottom = 6;
+                Button(footer, "Atos e detalhes", Details, 202).IsEnabled = _title != null;
+                Button(footer, "Fabricar reivindicação",
+                    () => ChooseClaimTitle(() => { if (_body.IsVisible) Draw(); }), 240);
+                DrawTree();
             }
             private void Details()
             {

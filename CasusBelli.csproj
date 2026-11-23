@@ -244,6 +244,7 @@
     <Compile Include="UI\Titles\TitleVM.cs" />
     <Compile Include="UI\Titles\TitleElementVM.cs" />
     <Compile Include="UI\Titles\KingdomHierarchyTab.cs" />
+    <Compile Include="UI\Titles\FeudalHierarchyTree.cs" />
     <Compile Include="UI\Titles\DemesneHierarchyVM.cs" />
     <Compile Include="UI\Titles\UIHelper.cs" />
     <Compile Include="UI\Titles\TitleSelectorItem.cs" />

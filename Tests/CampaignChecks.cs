@@ -250,6 +250,42 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
   t0.Claims[claimant]=ClaimType.Fabricated;
   if(!(bool)has.Invoke(null,new object[]{kingdoms[1],t0})) throw new Exception("mature claim rejected");
   Console.WriteLine("Repeated initialization, auto-generated fief and title war rights passed");
+  var hierarchyType=typeof(TitleManager).Assembly.GetType("CasusBelli.UI.Titles.FeudalHierarchyTree",true);
+  var hierarchyFlags=BindingFlags.NonPublic|BindingFlags.Instance;
+  var buildHierarchy=hierarchyType.GetMethod("Build",BindingFlags.Static|BindingFlags.NonPublic);
+  var showHierarchy=hierarchyType.GetMethod("Visible",hierarchyFlags);
+  Func<object,HashSet<FeudalTitle>,List<object>> showTree=(tree,expanded)=>{
+    var list=new List<object>();
+    foreach(var node in (System.Collections.IEnumerable)showHierarchy.Invoke(tree,new object[]{expanded}))list.Add(node);
+    return list;
+  };
+  var everyTitle=(IEnumerable<FeudalTitle>)typeof(TitleManager)
+    .GetProperty("AllTitles",BindingFlags.Instance|BindingFlags.Public|BindingFlags.NonPublic)
+    .GetValue(m);
+  var vlandiaTree=buildHierarchy.Invoke(null,new object[]{kingdoms[0],false,
+    m.GetSovereignTitleList(kingdoms[0]),everyTitle});
+  var allVlandia=(IEnumerable<FeudalTitle>)hierarchyType.GetProperty("Titles",hierarchyFlags).GetValue(vlandiaTree);
+  var complete=showTree(vlandiaTree,new HashSet<FeudalTitle>(allVlandia));
+  var titleField=complete[0].GetType().GetField("Title",hierarchyFlags);
+  var depthField=complete[0].GetType().GetField("Depth",hierarchyFlags);
+  Require(complete.Count==allVlandia.Count() && complete.Count>1,
+    "Full hierarchy should expose every title exactly once");
+  Require(complete.Any(n=>((FeudalTitle)titleField.GetValue(n)).StringId=="town_V1") &&
+    complete.Any(n=>((FeudalTitle)titleField.GetValue(n)).StringId=="castle_V7"),
+    "Full hierarchy must include county and barony branches");
+  var l0=new FeudalTitle(TitleType.Lordship,null,null,null,null,new TextObject("L"),null,"cb_lordship_test");
+  var b0=new FeudalTitle(TitleType.Barony,null,new List<FeudalTitle>{l0},null,null,new TextObject("B"),null,"cb_barony_test");
+  var c0=new FeudalTitle(TitleType.County,null,new List<FeudalTitle>{b0},null,null,new TextObject("C"),null,"cb_county_test");
+  var d0=new FeudalTitle(TitleType.Dukedom,null,new List<FeudalTitle>{c0},null,null,new TextObject("D"),null,"cb_duchy_test");
+  var k0=new FeudalTitle(TitleType.Kingdom,null,new List<FeudalTitle>{d0},null,null,new TextObject("K"),null,"cb_kingdom_test");
+  var chain=new List<FeudalTitle>{k0,d0,c0,b0,l0};
+  var chainTree=buildHierarchy.Invoke(null,new object[]{kingdoms[0],false,new[]{k0},chain});
+  var chainRows=showTree(chainTree,new HashSet<FeudalTitle>(chain));
+  Require(chainRows.Count==5 && chainRows.Select(n=>(int)depthField.GetValue(n)).SequenceEqual(new[]{0,1,2,3,4}),
+    "Kingdom, duchy, county, barony and lordship navigation");
+  Require(showTree(chainTree,new HashSet<FeudalTitle>{k0,d0}).Count==3,
+    "Collapsing a hierarchy branch must hide descendants");
+  Console.WriteLine("Full hierarchy: all titles, five levels and collapse/expand passed");
   foreach(XmlElement n in doc.SelectNodes("//*[@settlement]")){
    var f=Settlement.Find(n.GetAttribute("settlement"));var t=m.GetTitle(f);
    if(t==null || t.deJure.StringId!=n.GetAttribute("deJure") || t.TitleType!=(n.Name=="county"?TitleType.County:TitleType.Barony) || t.Sovereign==null || m.GetImmediateSuzerain(t)==null)throw new Exception("Invalid hierarchy "+f.StringId);
@@ -258,6 +294,13 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
   Field(extra.Town,"_ownerClan",kingdoms[1].RulingClan);
   typeof(TitleManager).Assembly.GetType("CasusBelli.RoyalSettlement").GetMethod("ConfirmPossession",BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,new object[]{extra});
   if(t0.deFacto!=kingdoms[1].Leader || t0.deJure!=priorLegal || priorLegal==t0.deFacto)throw new Exception("Posse de facto");
+  var occupiedTree=buildHierarchy.Invoke(null,new object[]{kingdoms[1],true,
+    m.GetSovereignTitleList(kingdoms[1]),everyTitle});
+  var occupiedTitles=(IEnumerable<FeudalTitle>)hierarchyType.GetProperty("Titles",hierarchyFlags).GetValue(occupiedTree);
+  Require(occupiedTitles.Contains(t0),"De facto hierarchy must include occupied foreign fiefs");
+  var occupationRows=showTree(occupiedTree,new HashSet<FeudalTitle>(occupiedTitles));
+  Require(occupationRows.Any(n=>((FeudalTitle)titleField.GetValue(n))==t0 &&
+    (int)depthField.GetValue(n)>=1),"Occupied title must attach under the effective kingdom");
   Field(extra.Town,"_ownerClan",priorClan);
   m.ApplyOwnerChange(extra,priorClan.Leader);
   Console.WriteLine("Peace possession updated de facto and retained original de jure holder");
@@ -455,6 +498,26 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
   Console.WriteLine("Internal dispute: reciprocal invitations, travel, commitment and realm departure passed");
   btn.ClickEventHandlers.Single()(btn);
   var page=rootWidget.FindChild("CbKingdomPanel"); if(!page.IsVisible || page.GetChild(0).ChildCount!=5 || page.GetChild(0).FindChild("CbPolitics")==null)throw new Exception("Submenu");
+  Func<string,Widget> findHierarchy=id=>rootWidget.GetAllChildrenRecursive().FirstOrDefault(w=>w.Id==id);
+  var outline=findHierarchy("CbHierarchyTree");
+  var scroll=findHierarchy("CbHierarchyScroll");
+  Require(outline!=null && scroll is ScrollablePanel && outline.ChildCount>1,
+    "Embedded scrollable hierarchy tree must appear in the kingdom tab");
+  int expandedCount=outline.ChildCount;
+  var collapseAll=(ButtonWidget)findHierarchy("CbCollapseAll");
+  collapseAll.ClickEventHandlers.Single()(collapseAll);
+  Require(outline.ChildCount==m.GetSovereignTitleList(kingdoms[0]).Count,
+    "Collapse all should leave only kingdom roots");
+  var expandAll=(ButtonWidget)findHierarchy("CbExpandAll");
+  expandAll.ClickEventHandlers.Single()(expandAll);
+  Require(outline.ChildCount>=expandedCount && outline.ChildCount>m.GetSovereignTitleList(kingdoms[0]).Count,
+    "Expand all should reveal descendants across all levels");
+  var chosen=(ButtonWidget)findHierarchy("CbSelectTitle_town_V1");
+  Require(chosen!=null,"County must be directly selectable from the tree");
+  chosen.ClickEventHandlers.Single()(chosen);
+  Require(((TextWidget)findHierarchy("CbSelectedTitle")).Text
+    .Contains(m.GetTitleByStringId("town_V1").FullName.ToString()),
+    "Title selection should update the footer");
   tab.GetMethod("OpenHierarchy",BindingFlags.NonPublic|BindingFlags.Static).Invoke(null,new object[]{kingdoms[0]});
   if(shown==null || shown.InquiryElements.Count!=2 || shown.InquiryElements.Any(x=>Equals(x.Identifier,"council")) || shown.InquiryElements.Any(x=>Equals(x.Identifier,"peers")))throw new Exception("Kingdom root");
   foreach(var id in new[]{"vlandia_sovereign",m.GetImmediateSuzerain(m.GetTitleByStringId("town_V1")).StringId,"town_V1"}){
