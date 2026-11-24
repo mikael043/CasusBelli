@@ -271,8 +271,8 @@ namespace CasusBelli.UI.Titles
                 var titleBrush = new Brush
                 {
                     Font = _caption.ReadOnlyBrush.Font,
-                    FontSize = 24,
-                    FontColor = Color.FromUint(0xE8D8B4FF),
+                    FontSize = 26,
+                    FontColor = Color.FromUint(0xFFE8D8B4),
                     TextHorizontalAlignment = TaleWorlds.TwoDimension.TextHorizontalAlignment.Left,
                     TextVerticalAlignment = TaleWorlds.TwoDimension.TextVerticalAlignment.Center
                 };
@@ -299,8 +299,8 @@ namespace CasusBelli.UI.Titles
                 var subBrush = new Brush
                 {
                     Font = _caption.ReadOnlyBrush.Font,
-                    FontSize = 13,
-                    FontColor = Color.FromUint(0xC9C2B6FF),
+                    FontSize = 15,
+                    FontColor = Color.FromUint(0xFFC9C2B6),
                     TextHorizontalAlignment = TaleWorlds.TwoDimension.TextHorizontalAlignment.Left,
                     TextVerticalAlignment = TaleWorlds.TwoDimension.TextVerticalAlignment.Center
                 };
@@ -342,7 +342,7 @@ namespace CasusBelli.UI.Titles
                     MarginTop = 72,
                     MarginLeft = 6,
                     MarginRight = 6,
-                    Color = Color.FromUint(0xA8752FFF),
+                    Color = Color.FromUint(0xFFA8752F),
                     DoNotAcceptEvents = true
                 };
                 if (_body.Context.SpriteData != null)
@@ -521,8 +521,8 @@ namespace CasusBelli.UI.Titles
                     Id = "CbSelectTitle_" + (title.StringId ?? ""),
                     WidthSizePolicy = SizePolicy.Fixed,
                     HeightSizePolicy = SizePolicy.Fixed,
-                    SuggestedWidth = 112,
-                    SuggestedHeight = 102,
+                    SuggestedWidth = 120,
+                    SuggestedHeight = 110,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Brush = node.Context.GetBrush("Encyclopedia.SubPage.Element"),
                     UpdateChildrenStates = true,
@@ -538,8 +538,8 @@ namespace CasusBelli.UI.Titles
                 var nameBrush = new Brush
                 {
                     Font = _caption.ReadOnlyBrush.Font,
-                    FontSize = 13,
-                    FontColor = Color.FromUint(0xE9E1D3FF),
+                    FontSize = 16,
+                    FontColor = Color.FromUint(0xFFE9E1D3),
                     TextHorizontalAlignment = TaleWorlds.TwoDimension.TextHorizontalAlignment.Center,
                     TextVerticalAlignment = TaleWorlds.TwoDimension.TextVerticalAlignment.Center
                 };
@@ -547,8 +547,8 @@ namespace CasusBelli.UI.Titles
                 {
                     WidthSizePolicy = SizePolicy.Fixed,
                     HeightSizePolicy = SizePolicy.Fixed,
-                    SuggestedWidth = 132,
-                    SuggestedHeight = 45,
+                    SuggestedWidth = 150,
+                    SuggestedHeight = 52,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Brush = nameBrush,
                     Text = title.FullName?.ToString() ?? title.StringId ?? "Título",
@@ -560,8 +560,8 @@ namespace CasusBelli.UI.Titles
                 var ownerBrush = new Brush
                 {
                     Font = _caption.ReadOnlyBrush.Font,
-                    FontSize = 10,
-                    FontColor = Color.FromUint(0xBFB7AAFF),
+                    FontSize = 12,
+                    FontColor = Color.FromUint(0xFFBFB7AA),
                     TextHorizontalAlignment = TaleWorlds.TwoDimension.TextHorizontalAlignment.Center,
                     TextVerticalAlignment = TaleWorlds.TwoDimension.TextVerticalAlignment.Center
                 };
@@ -569,8 +569,8 @@ namespace CasusBelli.UI.Titles
                 {
                     WidthSizePolicy = SizePolicy.Fixed,
                     HeightSizePolicy = SizePolicy.Fixed,
-                    SuggestedWidth = 132,
-                    SuggestedHeight = 20,
+                    SuggestedWidth = 150,
+                    SuggestedHeight = 24,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     Brush = ownerBrush,
                     Text = Owner(title)?.Name?.ToString() ?? "Vago",
@@ -587,7 +587,7 @@ namespace CasusBelli.UI.Titles
                     SuggestedWidth = 0,
                     SuggestedHeight = 20,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    MarginTop = 177,
+                    MarginTop = 195,
                     DoNotAcceptEvents = true,
                     AlphaFactor = .72f
                 };
@@ -601,7 +601,7 @@ namespace CasusBelli.UI.Titles
                     WidthSizePolicy = SizePolicy.CoverChildren,
                     HeightSizePolicy = SizePolicy.CoverChildren,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    MarginTop = 208,
+                    MarginTop = 226,
                     StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.HorizontalLeftToRight }
                 };
                 node.AddChild(children);
