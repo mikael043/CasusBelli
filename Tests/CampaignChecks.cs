@@ -320,27 +320,17 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
   }
   Console.WriteLine("Cultural sovereign names passed");
   var outsider=Blank<Hero>();Field(outsider,"_name",raw);if(rendered(outsider)!="Derthert")throw new Exception("Untitled hero");
-  var screen=Blank<KingdomManagementVM>();typeof(KingdomManagementVM).GetProperty("Kingdom").GetSetMethod(true).Invoke(screen,new object[]{kingdoms[0]});
-  var tab=asm.GetType("CasusBelli.UI.Titles.KingdomHierarchyTab",true);
-  new HarmonyLib.Harmony("cb.integration.tab").CreateClassProcessor(tab).Patch();
-  var ctx=Blank<UIContext>();
-  Field(ctx,"<EventManager>k__BackingField",Blank<TaleWorlds.GauntletUI.EventManager>());
-  Field(ctx,"<FontFactory>k__BackingField",Blank<FontFactory>());
-  Field(ctx,"<BrushFactory>k__BackingField",Blank<BrushFactory>());
-    Field(ctx.BrushFactory,"_brushes",new Dictionary<string,Brush>{{"DefaultBrush",new Brush(){Font=Blank<Font>()}}});
-  var langField=typeof(FontFactory).GetField("_currentLangugage",BindingFlags.NonPublic|BindingFlags.Instance);
-  var lang=FormatterServices.GetUninitializedObject(langField.FieldType);
-  langField.SetValue(ctx.FontFactory,lang);
-  WidgetInfo.Refresh(); Field(ctx,"<EventManager>k__BackingField",Activator.CreateInstance(typeof(TaleWorlds.GauntletUI.EventManager),BindingFlags.NonPublic|BindingFlags.Instance,null,new object[]{ctx},null));var rootWidget=new Widget(ctx);var tabs=new TaleWorlds.MountAndBlade.GauntletUI.Widgets.Kingdom.KingdomTabControlListPanel(ctx);rootWidget.AddChild(tabs);
-  var fiefs=new ButtonWidget(ctx){SuggestedHeight=42,SuggestedWidth=170};
-  fiefs.AddChild(new TextWidget(ctx));tabs.AddChild(fiefs);tabs.FiefsButton=fiefs;
-  var movie=Blank<GauntletMovieIdentifier>();
-  Field(movie,"<MovieName>k__BackingField","KingdomManagement");movie.DataSource=screen;
-  movie.Movie=new FixtureMovie(rootWidget);
-  var install=tab.GetMethod("AfterLoad",BindingFlags.NonPublic|BindingFlags.Static);
-  install.Invoke(null,new object[]{movie});install.Invoke(null,new object[]{movie});
-  var btn=(ButtonWidget)tabs.GetChild(1);if(btn.Id!="CbKingdomTab" || tabs.ChildCount!=2)throw new Exception("Tab not visible");
-  MultiSelectionInquiryData shown=null; MBInformationManager.OnShowMultiSelectionInquiry+=(d,p,b)=>shown=d;
+  var hierarchyVmType=asm.GetType("CasusBelli.UI.Titles.KingdomHierarchyVM",true);
+  var hierarchyVm=Activator.CreateInstance(hierarchyVmType,
+    BindingFlags.Instance|BindingFlags.NonPublic,null,
+    new object[]{new Func<Kingdom>(()=>kingdoms[0])},null);
+  hierarchyVmType.GetMethod("ExecuteOpen").Invoke(hierarchyVm,null);
+  Require((bool)hierarchyVmType.GetProperty("IsOpen").GetValue(hierarchyVm),
+    "Prefab hierarchy VM should open");
+  Require((string)hierarchyVmType.GetProperty("RealmName").GetValue(hierarchyVm)==kingdoms[0].Name.ToString(),
+    "Prefab hierarchy should use selected kingdom");
+  Require(((string)hierarchyVmType.GetProperty("CountsText").GetValue(hierarchyVm)).Contains("ducados"),
+    "Prefab hierarchy should expose rank counts");
   player=h;
   var harmony=new HarmonyLib.Harmony("cb.test.claims"); harmony.Patch(typeof(Hero).GetProperty("MainHero").GetGetMethod(), prefix:new HarmonyLib.HarmonyMethod(typeof(Check).GetMethod("MainHero")));
   var track=typeof(Campaign).GetProperty("MapTimeTracker",BindingFlags.NonPublic|BindingFlags.Instance);
@@ -496,52 +486,72 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
   if(dispute.CanAnswer(dispute.Offers[1]))throw new Exception("double commitment");
   Field(claimantClan,"_kingdom",kingdoms[1]);if(dispute.IsActive)throw new Exception("realm departure");
   Console.WriteLine("Internal dispute: reciprocal invitations, travel, commitment and realm departure passed");
-  btn.ClickEventHandlers.Single()(btn);
-  var page=rootWidget.FindChild("CbKingdomPanel"); if(!page.IsVisible || page.GetChild(0).ChildCount!=5 || page.GetChild(0).FindChild("CbPolitics")==null)throw new Exception("Submenu");
-  Func<string,Widget> findHierarchy=id=>rootWidget.GetAllChildrenRecursive().FirstOrDefault(w=>w.Id==id);
-  var visualTree=findHierarchy("CbHierarchyTree");
-  var scroll=findHierarchy("CbHierarchyScroll");
-  Require(visualTree!=null && scroll!=null &&
-    scroll.GetType().Name=="EncyclopediaTroopScrollablePanel" &&
-    findHierarchy("CbHorizontalScroll") is ScrollbarWidget &&
-    findHierarchy("CbVerticalScroll") is ScrollbarWidget,
-    "Feudal tree must use the native pannable panel with two-axis scrolling");
-  var panProp=scroll.GetType().GetProperty("PanWithMouseEnabled");
-  Require(panProp!=null && (bool)panProp.GetValue(scroll),
-    "Feudal tree must support mouse panning");
-  var allWidgets=rootWidget.GetAllChildrenRecursive().ToList();
-  int cardCount=allWidgets.OfType<ButtonWidget>()
-    .Count(w=>w.Id!=null && w.Id.StartsWith("CbSelectTitle_"));
-  int nativeNodeCount=allWidgets.Count(w=>w.GetType().Name=="EncyclopediaUnitTreeNodeItemBrushWidget");
-  Require(cardCount==allVlandia.Count() && nativeNodeCount==allVlandia.Count(),
-    "Native visual tree must render every feudal title exactly once");
-  string dukeId=m.GetImmediateSuzerain(m.GetTitleByStringId("town_V1")).StringId;
-  var dukeNode=findHierarchy("CbTreeNode_"+dukeId);
-  Require(dukeNode!=null && dukeNode.GetType().Name=="EncyclopediaUnitTreeNodeItemBrushWidget",
-    "Duchy must render as a native connector node");
-  var childPanel=dukeNode.GetAllChildrenRecursive().OfType<ListPanel>()
-    .FirstOrDefault(w=>w.Id=="ChildContainer");
-  Require(childPanel!=null && childPanel.ChildCount>0,
-    "Native duchy connector must contain its county branches");
-  var chosen=(ButtonWidget)findHierarchy("CbSelectTitle_town_V1");
-  Require(chosen!=null,"County must be directly selectable in visual tree");
-  chosen.ClickEventHandlers.Single()(chosen);
-  Require(((TextWidget)findHierarchy("CbSelectedTitle")).Text
+  var rootsValue=(System.Collections.IEnumerable)hierarchyVmType.GetProperty("Roots").GetValue(hierarchyVm);
+  var nodeVmType=asm.GetType("CasusBelli.UI.Titles.KingdomHierarchyNodeVM",true);
+  var branchProp=nodeVmType.GetProperty("Branch");
+  var stringIdProp=nodeVmType.GetProperty("StringId");
+  Func<object,int> countNode=null;
+  countNode=node=>{
+    int total=1;
+    foreach(var child in (System.Collections.IEnumerable)branchProp.GetValue(node))
+      total+=countNode(child);
+    return total;
+  };
+  int prefabNodeCount=0;object townNode=null;
+  Action<object> inspectNode=null;
+  inspectNode=node=>{
+    prefabNodeCount++;
+    if((string)stringIdProp.GetValue(node)=="town_V1")townNode=node;
+    foreach(var child in (System.Collections.IEnumerable)branchProp.GetValue(node))
+      inspectNode(child);
+  };
+  foreach(var rootNode in rootsValue)inspectNode(rootNode);
+  Require(prefabNodeCount==allVlandia.Count(),
+    "Prefab hierarchy VM must expose every feudal title exactly once");
+  Require(townNode!=null,"Prefab hierarchy must expose county nodes");
+  nodeVmType.GetMethod("ExecuteSelect").Invoke(townNode,null);
+  Require(((string)hierarchyVmType.GetProperty("SelectedText").GetValue(hierarchyVm))
     .Contains(m.GetTitleByStringId("town_V1").FullName.ToString()),
-    "Selecting county card must update title details");
-  Require(((TextWidget)findHierarchy("CbDiagramCount")).Text.Contains("ducados") &&
-    ((TextWidget)findHierarchy("CbDiagramCount")).Text.Contains("baronias"),
-    "Hierarchy header must summarize title ranks");
-  Console.WriteLine("Native feudal portrait tree: all titles, connector branches, panning and two-axis scrolling passed");
-  tab.GetMethod("OpenHierarchy",BindingFlags.NonPublic|BindingFlags.Static).Invoke(null,new object[]{kingdoms[0]});
-  if(shown==null || shown.InquiryElements.Count!=2 || shown.InquiryElements.Any(x=>Equals(x.Identifier,"council")) || shown.InquiryElements.Any(x=>Equals(x.Identifier,"peers")))throw new Exception("Kingdom root");
-  foreach(var id in new[]{"vlandia_sovereign",m.GetImmediateSuzerain(m.GetTitleByStringId("town_V1")).StringId,"town_V1"}){
-    var entry=shown.InquiryElements.Single(e=>(e.Identifier is FeudalTitle) && ((FeudalTitle)e.Identifier).StringId==id);
-    shown.AffirmativeAction(new List<InquiryElement>{entry});
-  }
-  if(!shown.InquiryElements.Any(e=>(e.Identifier is FeudalTitle) && ((FeudalTitle)e.Identifier).StringId=="castle_V7"))throw new Exception("Barony missing");
-  shown.NegativeAction(null);if(!shown.InquiryElements.Any(e=>(e.Identifier is FeudalTitle) && ((FeudalTitle)e.Identifier).StringId=="town_V1"))throw new Exception("Back failed");
-  Console.WriteLine("Real Harmony name getter, repeated lookup, gender, untitled hero and kingdom hierarchy navigation passed");
+    "Selecting a prefab node must update hierarchy selection");
+  hierarchyVmType.GetMethod("ExecuteDeFacto").Invoke(hierarchyVm,null);
+  Require((bool)hierarchyVmType.GetProperty("CanDeJure").GetValue(hierarchyVm),
+    "De facto mode should enable return to de jure");
+  hierarchyVmType.GetMethod("ExecuteDeJure").Invoke(hierarchyVm,null);
+
+  string hierarchyPrefab=Path.Combine(Environment.CurrentDirectory,
+    "GUI","Prefabs","Kingdom","CasusBelli","CBKingdomHierarchy.xml");
+  string nodePrefab=Path.Combine(Environment.CurrentDirectory,
+    "GUI","Prefabs","Items","CBKingdomHierarchyNode.xml");
+  Require(File.Exists(hierarchyPrefab)&&File.Exists(nodePrefab),
+    "Hierarchy prefab files must exist");
+  var hierarchyXml=new XmlDocument{XmlResolver=null};hierarchyXml.Load(hierarchyPrefab);
+  var nodeXml=new XmlDocument{XmlResolver=null};nodeXml.Load(nodePrefab);
+  Require(hierarchyXml.SelectSingleNode("//EncyclopediaTroopScrollablePanel[@PanWithMouseEnabled='true']")!=null &&
+    hierarchyXml.SelectNodes("//ScrollbarWidget").Count>=2,
+    "Hierarchy prefab must provide pannable two-axis scrolling");
+  Require(hierarchyXml.SelectSingleNode("//*[@Command.Click='ExecuteDeFacto']")!=null &&
+    hierarchyXml.SelectSingleNode("//*[@Command.Click='ExecuteDeJure']")!=null &&
+    hierarchyXml.SelectSingleNode("//*[@Command.Click='ExecutePolitics']")!=null,
+    "Hierarchy prefab must own navigation and de facto/de jure controls");
+  var nativeNode=nodeXml.SelectSingleNode("//EncyclopediaUnitTreeNodeItemBrushWidget");
+  var lineBrushAttr=nativeNode==null?null:nativeNode.Attributes["LineBrush"];
+  Require(nativeNode!=null && lineBrushAttr!=null &&
+    lineBrushAttr.Value=="Encyclopedia.CharacterTree.Line" &&
+    nodeXml.SelectSingleNode("//ListPanel[@Id='ChildContainer']/ItemTemplate/CBKingdomHierarchyNode")!=null,
+    "Node prefab must use native recursive tree connectors");
+  Require(nodeXml.SelectSingleNode("//TextWidget[@Text='@NameText'][@Brush.FontSize='16']")!=null &&
+    nodeXml.SelectSingleNode("//TextWidget[@Text='@HolderText'][@Brush.FontSize='12']")!=null,
+    "Node typography must live in prefab XML");
+
+  foreach(var typeName in new[]{
+    "CasusBelli.UI.Titles.KingdomHierarchyTabPrefabPatch",
+    "CasusBelli.UI.Titles.KingdomHierarchyPanelPrefabPatch",
+    "CasusBelli.UI.Titles.KingdomHierarchyMixin"})
+    Require(asm.GetType(typeName,true)!=null,"Missing prefab integration type "+typeName);
+  var closePatch=asm.GetType("CasusBelli.UI.Titles.KingdomHierarchyNativeTabClosePatch",true);
+  new HarmonyLib.Harmony("cb.integration.prefab.hierarchy").CreateClassProcessor(closePatch).Patch();
+  Console.WriteLine("Prefab feudal hierarchy: recursive VM, XML layout, native connectors and tab integration passed");
+  Console.WriteLine("Real Harmony name getter, repeated lookup, gender, untitled hero and prefab hierarchy navigation passed");
   PoliticalChecks(campaign,kingdoms,alive,m,doc);
   Console.WriteLine("XML runtime: verified "+doc.SelectNodes("//*[@settlement]").Count+" landed titles with holders, ranks and hierarchy");
  }

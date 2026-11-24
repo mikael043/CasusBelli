@@ -1,0 +1,270 @@
+<Prefab>
+  <Window>
+    <Widget IsVisible="@IsOpen" IsEnabled="@IsOpen"
+            WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+            MarginTop="188" MarginBottom="75">
+      <Children>
+        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                     Brush="Standard.Background.Brush" DoNotAcceptEvents="true" />
+
+        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed"
+                   SuggestedHeight="44" HorizontalAlignment="Center"
+                   VerticalAlignment="Top" MarginTop="4"
+                   StackLayout.LayoutMethod="HorizontalLeftToRight">
+          <Children>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                          SuggestedWidth="170" SuggestedHeight="40"
+                          Brush="ButtonBrush2" IsEnabled="false"
+                          UpdateChildrenStates="true">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                            Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                            Brush.TextHorizontalAlignment="Center"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="Hierarquia" />
+              </Children>
+            </ButtonWidget>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                          SuggestedWidth="190" SuggestedHeight="40" MarginLeft="4"
+                          Brush="ButtonBrush2" Command.Click="ExecutePeers"
+                          UpdateChildrenStates="true">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                            Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                            Brush.TextHorizontalAlignment="Center"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="Pares do reino" />
+              </Children>
+            </ButtonWidget>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                          SuggestedWidth="150" SuggestedHeight="40" MarginLeft="4"
+                          Brush="ButtonBrush2" Command.Click="ExecuteCouncil"
+                          UpdateChildrenStates="true">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                            Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                            Brush.TextHorizontalAlignment="Center"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="Conselho" />
+              </Children>
+            </ButtonWidget>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                          SuggestedWidth="150" SuggestedHeight="40" MarginLeft="4"
+                          Brush="ButtonBrush2" Command.Click="ExecutePolitics"
+                          UpdateChildrenStates="true">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                            Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                            Brush.TextHorizontalAlignment="Center"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="Política" />
+              </Children>
+            </ButtonWidget>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                          SuggestedWidth="220" SuggestedHeight="40" MarginLeft="4"
+                          Brush="ButtonBrush2" Command.Click="ExecuteDisputes"
+                          UpdateChildrenStates="true">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                            Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                            Brush.TextHorizontalAlignment="Center"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="Disputas internas" />
+              </Children>
+            </ButtonWidget>
+          </Children>
+        </ListPanel>
+
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                SuggestedHeight="64" MarginTop="52">
+          <Children>
+            <MaskedTextureWidget DataSource="{RealmBanner}"
+                                 WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                                 SuggestedWidth="46" SuggestedHeight="46"
+                                 HorizontalAlignment="Left" VerticalAlignment="Center"
+                                 MarginLeft="14"
+                                 Brush="Flat.Tuple.Banner.Small.Hero"
+                                 AdditionalArgs="@AdditionalArgs" ImageId="@Id"
+                                 TextureProviderName="@TextureProviderName"
+                                 IsDisabled="true" />
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                        SuggestedHeight="34" MarginLeft="68" MarginRight="470"
+                        VerticalAlignment="Top"
+                        Brush="Encyclopedia.SubPage.Element.Name.Text"
+                        Brush.FontSize="26" Brush.FontColor="#E8D8B4FF"
+                        Brush.TextHorizontalAlignment="Left"
+                        Brush.TextVerticalAlignment="Center"
+                        Text="@RealmName" />
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                        SuggestedHeight="24" MarginLeft="68" MarginRight="470"
+                        VerticalAlignment="Bottom"
+                        Brush="Encyclopedia.SubPage.Element.Name.Text"
+                        Brush.FontSize="15" Brush.FontColor="#C9C2B6FF"
+                        Brush.TextHorizontalAlignment="Left"
+                        Brush.TextVerticalAlignment="Center"
+                        Text="@CountsText" />
+            <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren"
+                       HorizontalAlignment="Right" VerticalAlignment="Center"
+                       MarginRight="10"
+                       StackLayout.LayoutMethod="HorizontalLeftToRight">
+              <Children>
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                              SuggestedWidth="140" SuggestedHeight="36"
+                              Brush="ButtonBrush2" Command.Click="ExecuteChangeRealm"
+                              UpdateChildrenStates="true">
+                  <Children>
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                                Brush="Clan.TabControl.Text" Brush.FontSize="18"
+                                Brush.TextHorizontalAlignment="Center"
+                                Brush.TextVerticalAlignment="Center"
+                                Text="Trocar reino" />
+                  </Children>
+                </ButtonWidget>
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                              SuggestedWidth="110" SuggestedHeight="36" MarginLeft="4"
+                              Brush="ButtonBrush2" Command.Click="ExecuteDeFacto"
+                              IsEnabled="@CanDeFacto" UpdateChildrenStates="true">
+                  <Children>
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                                Brush="Clan.TabControl.Text" Brush.FontSize="18"
+                                Brush.TextHorizontalAlignment="Center"
+                                Brush.TextVerticalAlignment="Center"
+                                Text="De facto" />
+                  </Children>
+                </ButtonWidget>
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                              SuggestedWidth="110" SuggestedHeight="36" MarginLeft="4"
+                              Brush="ButtonBrush2" Command.Click="ExecuteDeJure"
+                              IsEnabled="@CanDeJure" UpdateChildrenStates="true">
+                  <Children>
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                                Brush="Clan.TabControl.Text" Brush.FontSize="18"
+                                Brush.TextHorizontalAlignment="Center"
+                                Brush.TextVerticalAlignment="Center"
+                                Text="De jure" />
+                  </Children>
+                </ButtonWidget>
+              </Children>
+            </ListPanel>
+          </Children>
+        </Widget>
+
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                SuggestedHeight="2" MarginTop="116" MarginLeft="12" MarginRight="12"
+                Sprite="BlankWhiteSquare_9" Color="#A8752FFF"
+                DoNotAcceptEvents="true" />
+
+        <EncyclopediaTroopScrollablePanel Id="CbHierarchyScroll"
+                 WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                 InnerPanel="TreeClip\TreeRoots" ClipRect="TreeClip"
+                 HorizontalScrollbar="..\CbHierarchyHorizontalScrollbar"
+                 VerticalScrollbar="..\CbHierarchyVerticalScrollbar"
+                 PanWithMouseEnabled="true" AutoHideScrollBars="true"
+                 AutoAdjustScrollbarHandleSize="true"
+                 OnlyAcceptScrollEventIfCanScroll="true"
+                 MarginTop="124" MarginBottom="62"
+                 MarginLeft="8" MarginRight="30">
+          <Children>
+            <Widget Id="TreeClip"
+                    WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                    ClipContents="true">
+              <Children>
+                <ListPanel Id="TreeRoots" DataSource="{Roots}"
+                           WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren"
+                           MinWidth="1100" MinHeight="500"
+                           HorizontalAlignment="Center" VerticalAlignment="Top"
+                           MarginTop="12" MarginBottom="50"
+                           MarginLeft="45" MarginRight="45"
+                           StackLayout.LayoutMethod="HorizontalLeftToRight">
+                  <ItemTemplate>
+                    <CBKingdomHierarchyNode />
+                  </ItemTemplate>
+                </ListPanel>
+              </Children>
+            </Widget>
+          </Children>
+        </EncyclopediaTroopScrollablePanel>
+
+        <ScrollbarWidget Id="CbHierarchyVerticalScrollbar"
+                         HeightSizePolicy="StretchToParent" WidthSizePolicy="Fixed"
+                         SuggestedWidth="28" MinValue="0" MaxValue="100"
+                         MarginRight="5" MarginTop="124" MarginBottom="65"
+                         AlignmentAxis="Vertical"
+                         HorizontalAlignment="Right" VerticalAlignment="Center"
+                         Handle="ScrollbarHandle" UpdateChildrenStates="true">
+          <Children>
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent"
+                    SuggestedWidth="4" HorizontalAlignment="Center"
+                    Sprite="SPGeneral\SPRecruitment\slider_thin_bed_vertical" />
+            <ImageWidget Id="ScrollbarHandle"
+                         WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                         MinHeight="90" SuggestedWidth="28" SuggestedHeight="145"
+                         HorizontalAlignment="Center"
+                         Brush="Encyclopedia.Scroll.Handle.Vertical" />
+          </Children>
+        </ScrollbarWidget>
+
+        <ScrollbarWidget Id="CbHierarchyHorizontalScrollbar"
+                         HeightSizePolicy="Fixed" WidthSizePolicy="StretchToParent"
+                         SuggestedHeight="9" MinValue="0" MaxValue="100"
+                         MarginLeft="42" MarginRight="48" MarginBottom="58"
+                         AlignmentAxis="Horizontal"
+                         HorizontalAlignment="Center" VerticalAlignment="Bottom"
+                         Handle="ScrollbarHandle" UpdateChildrenStates="true">
+          <Children>
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                    SuggestedHeight="4" VerticalAlignment="Center"
+                    Sprite="SPGeneral\SPRecruitment\slider_thin_bed_horizontal" />
+            <ImageWidget Id="ScrollbarHandle"
+                         WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                         MinWidth="90" SuggestedWidth="145" SuggestedHeight="28"
+                         VerticalAlignment="Center"
+                         Brush="Encyclopedia.Scroll.Handle.Horizontal" />
+          </Children>
+        </ScrollbarWidget>
+
+        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                    SuggestedHeight="28" VerticalAlignment="Bottom"
+                    MarginLeft="12" MarginRight="400" MarginBottom="25"
+                    Brush="Encyclopedia.SubPage.Element.Name.Text"
+                    Brush.FontSize="15" Brush.FontColor="#D2C9BAFF"
+                    Brush.TextHorizontalAlignment="Left"
+                    Brush.TextVerticalAlignment="Center"
+                    Text="@SelectedText" />
+
+        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren"
+                   HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                   MarginRight="10" MarginBottom="7"
+                   StackLayout.LayoutMethod="HorizontalLeftToRight">
+          <Children>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                          SuggestedWidth="180" SuggestedHeight="40"
+                          Brush="ButtonBrush2" Command.Click="ExecuteDetails"
+                          IsEnabled="@HasSelection" UpdateChildrenStates="true">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                            Brush="Clan.TabControl.Text" Brush.FontSize="18"
+                            Brush.TextHorizontalAlignment="Center"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="Atos e detalhes" />
+              </Children>
+            </ButtonWidget>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                          SuggestedWidth="205" SuggestedHeight="40" MarginLeft="4"
+                          Brush="ButtonBrush2" Command.Click="ExecuteClaim"
+                          IsEnabled="@HasSelection" UpdateChildrenStates="true">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                            Brush="Clan.TabControl.Text" Brush.FontSize="18"
+                            Brush.TextHorizontalAlignment="Center"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="Fabricar reivindicação" />
+              </Children>
+            </ButtonWidget>
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

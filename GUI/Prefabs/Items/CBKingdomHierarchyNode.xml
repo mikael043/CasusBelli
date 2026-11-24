@@ -1,0 +1,95 @@
+<Prefab>
+  <Window>
+    <EncyclopediaUnitTreeNodeItemBrushWidget
+        WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren"
+        MarginLeft="10" MarginRight="10"
+        ButtonContainer="ButtonContainer"
+        ChildContainer="ChildContainer"
+        LineContainer="LineContainer"
+        LineBrush="Encyclopedia.CharacterTree.Line"
+        AlternateLineBrush="Encyclopedia.CharacterTree.Line.Alternative">
+      <Children>
+        <ListPanel Id="ButtonContainer"
+                   WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren"
+                   StackLayout.LayoutMethod="VerticalTopToBottom"
+                   HorizontalAlignment="Center">
+          <Children>
+            <ButtonWidget Command.Click="ExecuteSelect"
+                          WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                          SuggestedWidth="120" SuggestedHeight="110"
+                          HorizontalAlignment="Center"
+                          Brush="Encyclopedia.SubPage.Element"
+                          DoNotPassEventsToChildren="true"
+                          UpdateChildrenStates="true">
+              <Children>
+                <EncyclopediaCharacterTableauWidget
+                    DataSource="{ImageIdentifier}"
+                    WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                    BodyProperties="@BodyProperties" IsFemale="@IsFemale"
+                    EquipmentCode="@EquipmentCode" CharStringId="@CharStringId"
+                    StanceIndex="@StanceIndex" BannerCodeText="@BannerCodeText"
+                    MountCreationKey="@MountCreationKey" IsEnabled="false"
+                    IsDead="@IsDead" ArmorColor1="@ArmorColor1" ArmorColor2="@ArmorColor2"
+                    IdleAction="@IdleAction" IdleFaceAnim="@IdleFaceAnim"
+                    Race="@Race" IsHidden="@IsHidden"
+                    MarginLeft="4" MarginRight="4" MarginTop="4" MarginBottom="4"
+                    VerticalAlignment="Center" />
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                        Sprite="Encyclopedia\hero_silhouette"
+                        IsVisible="@IsHidden" IsEnabled="false" />
+                <Widget IsVisible="@HasClanBanner"
+                        WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                        SuggestedWidth="38" SuggestedHeight="48"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        MarginRight="3" MarginTop="3"
+                        DoNotAcceptEvents="true">
+                  <Children>
+                    <MaskedTextureWidget DataSource="{ClanBanner}"
+                        WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                        Brush="Flat.Tuple.Banner.Small.Hero"
+                        AdditionalArgs="@AdditionalArgs" ImageId="@Id"
+                        TextureProviderName="@TextureProviderName"
+                        IsDisabled="true" />
+                  </Children>
+                </Widget>
+              </Children>
+            </ButtonWidget>
+            <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                        SuggestedWidth="150" SuggestedHeight="52"
+                        HorizontalAlignment="Center"
+                        Brush="Encyclopedia.SubPage.Element.Name.Text"
+                        Brush.FontSize="16" Brush.FontColor="#E9E1D3FF"
+                        Brush.TextHorizontalAlignment="Center"
+                        Brush.TextVerticalAlignment="Center"
+                        Text="@NameText" DoNotAcceptEvents="true" />
+            <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                        SuggestedWidth="150" SuggestedHeight="24"
+                        HorizontalAlignment="Center"
+                        Brush="Encyclopedia.SubPage.Element.Name.Text"
+                        Brush.FontSize="12" Brush.FontColor="#BFB7AAFF"
+                        Brush.TextHorizontalAlignment="Center"
+                        Brush.TextVerticalAlignment="Center"
+                        Text="@HolderText" DoNotAcceptEvents="true" />
+          </Children>
+        </ListPanel>
+        <Widget Id="LineContainer"
+                DoNotAcceptEvents="true" DoNotPassEventsToChildren="true"
+                WidthSizePolicy="Fixed" SuggestedWidth="0"
+                HeightSizePolicy="Fixed" SuggestedHeight="24"
+                HorizontalAlignment="Center" MarginTop="194"
+                Sprite="BlankWhiteSquare_9" AlphaFactor="0.72">
+          <Children />
+        </Widget>
+        <ListPanel Id="ChildContainer" DataSource="{Branch}"
+                   HeightSizePolicy="CoverChildren" WidthSizePolicy="CoverChildren"
+                   MarginTop="226" HorizontalAlignment="Center"
+                   DoNotAcceptEvents="true"
+                   StackLayout.LayoutMethod="HorizontalLeftToRight">
+          <ItemTemplate>
+            <CBKingdomHierarchyNode />
+          </ItemTemplate>
+        </ListPanel>
+      </Children>
+    </EncyclopediaUnitTreeNodeItemBrushWidget>
+  </Window>
+</Prefab>
