@@ -264,6 +264,8 @@
           </Children>
         </ListPanel>
 
+        <CBKingdomHierarchyDetails DataSource="{Details}" />
+
       </Children>
     </Widget>
   </Window>

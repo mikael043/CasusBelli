@@ -258,6 +258,7 @@
     <Content Include="GUI\Prefabs\Settlements\TitlesWindow.xml" />
     <Content Include="GUI\Prefabs\Kingdom\Demesne\DemesneHierarchy.xml" />
     <Content Include="GUI\Prefabs\Kingdom\CasusBelli\CBKingdomHierarchy.xml" />
+    <Content Include="GUI\Prefabs\Kingdom\CasusBelli\CBKingdomHierarchyDetails.xml" />
     <Content Include="GUI\Prefabs\Items\CBKingdomHierarchyNode.xml" />
     <Content Include="GUI\Prefabs\Items\TitleElement.xml" />
   </ItemGroup>

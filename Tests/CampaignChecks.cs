@@ -509,10 +509,19 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
   Require(prefabNodeCount==allVlandia.Count(),
     "Prefab hierarchy VM must expose every feudal title exactly once");
   Require(townNode!=null,"Prefab hierarchy must expose county nodes");
+  Require(nodeVmType.GetProperty("PortraitIdentifier")!=null &&
+    nodeVmType.GetProperty("ImageIdentifier")==null,
+    "Tree nodes must use lightweight 2D portrait identifiers only");
   nodeVmType.GetMethod("ExecuteSelect").Invoke(townNode,null);
   Require(((string)hierarchyVmType.GetProperty("SelectedText").GetValue(hierarchyVm))
     .Contains(m.GetTitleByStringId("town_V1").FullName.ToString()),
     "Selecting a prefab node must update hierarchy selection");
+  var detailsVm=hierarchyVmType.GetProperty("Details").GetValue(hierarchyVm);
+  var detailsVmType=detailsVm.GetType();
+  Require((bool)detailsVmType.GetProperty("IsOpen").GetValue(detailsVm),
+    "Clicking a title should open the 3D details window");
+  Require(detailsVmType.GetProperty("Character").PropertyType.Name=="HeroViewModel",
+    "Only the details window should own the 3D HeroViewModel");
   hierarchyVmType.GetMethod("ExecuteDeFacto").Invoke(hierarchyVm,null);
   Require((bool)hierarchyVmType.GetProperty("CanDeJure").GetValue(hierarchyVm),
     "De facto mode should enable return to de jure");
@@ -522,10 +531,13 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
     "GUI","Prefabs","Kingdom","CasusBelli","CBKingdomHierarchy.xml");
   string nodePrefab=Path.Combine(Environment.CurrentDirectory,
     "GUI","Prefabs","Items","CBKingdomHierarchyNode.xml");
-  Require(File.Exists(hierarchyPrefab)&&File.Exists(nodePrefab),
+  string detailsPrefab=Path.Combine(Environment.CurrentDirectory,
+    "GUI","Prefabs","Kingdom","CasusBelli","CBKingdomHierarchyDetails.xml");
+  Require(File.Exists(hierarchyPrefab)&&File.Exists(nodePrefab)&&File.Exists(detailsPrefab),
     "Hierarchy prefab files must exist");
   var hierarchyXml=new XmlDocument{XmlResolver=null};hierarchyXml.Load(hierarchyPrefab);
   var nodeXml=new XmlDocument{XmlResolver=null};nodeXml.Load(nodePrefab);
+  var detailsXml=new XmlDocument{XmlResolver=null};detailsXml.Load(detailsPrefab);
   Require(hierarchyXml.SelectSingleNode("//EncyclopediaTroopScrollablePanel[@PanWithMouseEnabled='true']")!=null &&
     hierarchyXml.SelectNodes("//ScrollbarWidget").Count>=2,
     "Hierarchy prefab must provide pannable two-axis scrolling");
@@ -542,6 +554,16 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
   Require(nodeXml.SelectSingleNode("//TextWidget[@Text='@NameText'][@Brush.FontSize='16']")!=null &&
     nodeXml.SelectSingleNode("//TextWidget[@Text='@HolderText'][@Brush.FontSize='12']")!=null,
     "Node typography must live in prefab XML");
+  Require(nodeXml.SelectSingleNode("//ImageIdentifierWidget[@DataSource='{PortraitIdentifier}']")!=null &&
+    nodeXml.SelectNodes("//EncyclopediaCharacterTableauWidget").Count==0,
+    "Hierarchy nodes must render 2D portraits and no 3D tableaus");
+  Require(detailsXml.SelectNodes("//EncyclopediaCharacterTableauWidget").Count==1 &&
+    detailsXml.SelectSingleNode("//*[@Command.Click='ExecuteFeudalActions']")!=null &&
+    detailsXml.SelectSingleNode("//*[@Command.Click='ExecuteClaim']")!=null &&
+    detailsXml.SelectSingleNode("//*[@Command.Click='ExecuteClose']")!=null,
+    "Details prefab must contain one 3D character and right-side title actions");
+  Require(hierarchyXml.SelectSingleNode("//CBKingdomHierarchyDetails[@DataSource='{Details}']")!=null,
+    "Hierarchy prefab must host the title details window");
 
   foreach(var typeName in new[]{
     "CasusBelli.UI.Titles.KingdomHierarchyTabPrefabPatch",

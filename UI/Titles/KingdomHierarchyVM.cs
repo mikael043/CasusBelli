@@ -17,6 +17,7 @@ namespace CasusBelli.UI.Titles
         private readonly Func<Kingdom> _defaultKingdom;
         private readonly MBBindingList<KingdomHierarchyNodeVM> _roots =
             new MBBindingList<KingdomHierarchyNodeVM>();
+        private readonly KingdomHierarchyDetailsVM _details;
 
         private Kingdom _realm;
         private FeudalHierarchyTree _tree;
@@ -31,6 +32,7 @@ namespace CasusBelli.UI.Titles
         internal KingdomHierarchyVM(Func<Kingdom> defaultKingdom)
         {
             _defaultKingdom = defaultKingdom ?? (() => null);
+            _details = new KingdomHierarchyDetailsVM(this);
         }
 
         internal Kingdom Realm => _realm;
@@ -38,6 +40,9 @@ namespace CasusBelli.UI.Titles
 
         [DataSourceProperty]
         public MBBindingList<KingdomHierarchyNodeVM> Roots => _roots;
+
+        [DataSourceProperty]
+        public KingdomHierarchyDetailsVM Details => _details;
 
         [DataSourceProperty]
         public BannerImageIdentifierVM RealmBanner
@@ -121,6 +126,7 @@ namespace CasusBelli.UI.Titles
 
         internal void Close()
         {
+            _details.Close();
             IsOpen = false;
         }
 
@@ -199,7 +205,7 @@ namespace CasusBelli.UI.Titles
         public void ExecuteDetails()
         {
             if (_selectedTitle == null) return;
-            KingdomHierarchyTab.OpenDetails(_selectedTitle, () => RefreshTree(false));
+            _details.Open(_selectedTitle);
         }
 
         public void ExecuteClaim()
@@ -223,6 +229,18 @@ namespace CasusBelli.UI.Titles
             _selectedTitle = title;
             UpdateSelection();
             OnPropertyChanged(nameof(HasSelection));
+        }
+
+        internal void SelectAndOpenDetails(FeudalTitle title)
+        {
+            Select(title);
+            _details.Open(title);
+        }
+
+        internal void RefreshAfterTitleAction(FeudalTitle title)
+        {
+            RefreshTree(false);
+            if (title != null) _details.Open(title);
         }
 
         private void SetRealm(Kingdom kingdom, bool resetSelection)
@@ -268,6 +286,8 @@ namespace CasusBelli.UI.Titles
 
             UpdateSelection();
             OnPropertyChanged(nameof(HasSelection));
+            if (_details.IsOpen && _selectedTitle != null)
+                _details.Open(_selectedTitle);
         }
 
         private void UpdateSelection()
@@ -285,7 +305,7 @@ namespace CasusBelli.UI.Titles
         private readonly KingdomHierarchyVM _hierarchy;
         private readonly MBBindingList<KingdomHierarchyNodeVM> _branch =
             new MBBindingList<KingdomHierarchyNodeVM>();
-        private HeroViewModel _imageIdentifier;
+        private CharacterImageIdentifierVM _portraitIdentifier;
         private BannerImageIdentifierVM _clanBanner;
         private bool _isHidden;
 
@@ -298,25 +318,16 @@ namespace CasusBelli.UI.Titles
             _hierarchy = hierarchy;
 
             Hero owner = hierarchy.Owner(title);
-            ImageIdentifier = new HeroViewModel(CharacterViewModel.StanceTypes.EmphasizeFace);
-            if (owner != null)
+            if (owner?.CharacterObject != null)
             {
                 try
                 {
-                    ImageIdentifier.FillFrom(owner, -1, false, true);
-                    ImageIdentifier.SetEquipment(
-                        EquipmentIndex.ArmorItemEndSlot, default(EquipmentElement));
-                    ImageIdentifier.SetEquipment(
-                        EquipmentIndex.HorseHarness, default(EquipmentElement));
-                    ImageIdentifier.SetEquipment(
-                        EquipmentIndex.NumAllWeaponSlots, default(EquipmentElement));
-                    IsHidden = ImageIdentifier.IsHidden;
+                    PortraitIdentifier = new CharacterImageIdentifierVM(
+                        CharacterCode.CreateFrom(owner.CharacterObject));
+                    IsHidden = PortraitIdentifier == null || !PortraitIdentifier.IsValid;
                 }
                 catch
                 {
-                    // Tests and partially initialized campaign UI may not have
-                    // CampaignUIHelper state yet. The prefab shows a silhouette.
-                    ImageIdentifier.IsHidden = true;
                     IsHidden = true;
                 }
 
@@ -325,7 +336,6 @@ namespace CasusBelli.UI.Titles
             }
             else
             {
-                ImageIdentifier.IsHidden = true;
                 IsHidden = true;
             }
 
@@ -343,12 +353,12 @@ namespace CasusBelli.UI.Titles
         public string HolderText => _hierarchy.Owner(_title)?.Name?.ToString() ?? "Vago";
 
         [DataSourceProperty]
-        public HeroViewModel ImageIdentifier
+        public CharacterImageIdentifierVM PortraitIdentifier
         {
-            get => _imageIdentifier;
+            get => _portraitIdentifier;
             private set
             {
-                _imageIdentifier = value;
+                _portraitIdentifier = value;
                 OnPropertyChangedWithValue(value);
             }
         }
@@ -385,13 +395,275 @@ namespace CasusBelli.UI.Titles
 
         public void ExecuteSelect()
         {
-            _hierarchy.Select(_title);
+            _hierarchy.SelectAndOpenDetails(_title);
         }
 
         public void ExecuteDetails()
         {
-            _hierarchy.Select(_title);
-            _hierarchy.ExecuteDetails();
+            _hierarchy.SelectAndOpenDetails(_title);
+        }
+    }
+
+    internal sealed class KingdomHierarchyDetailsVM : ViewModel
+    {
+        private readonly KingdomHierarchyVM _hierarchy;
+        private FeudalTitle _title;
+        private Hero _owner;
+        private HeroViewModel _character;
+        private BannerImageIdentifierVM _clanBanner;
+        private bool _isOpen;
+        private bool _characterHidden = true;
+        private string _titleName = "";
+        private string _rankText = "";
+        private string _holderName = "";
+        private string _deJureText = "";
+        private string _deFactoText = "";
+        private string _lawsText = "";
+        private string _claimText = "";
+        private bool _canClaim;
+        private bool _canDucalPolitics;
+
+        internal KingdomHierarchyDetailsVM(KingdomHierarchyVM hierarchy)
+        {
+            _hierarchy = hierarchy;
+            Character = new HeroViewModel(CharacterViewModel.StanceTypes.EmphasizeFace);
+            Character.IsHidden = true;
+        }
+
+        [DataSourceProperty]
+        public bool IsOpen
+        {
+            get => _isOpen;
+            private set
+            {
+                if (_isOpen == value) return;
+                _isOpen = value;
+                OnPropertyChangedWithValue(value);
+            }
+        }
+
+        [DataSourceProperty]
+        public HeroViewModel Character
+        {
+            get => _character;
+            private set
+            {
+                _character = value;
+                OnPropertyChangedWithValue(value);
+            }
+        }
+
+        [DataSourceProperty]
+        public BannerImageIdentifierVM ClanBanner
+        {
+            get => _clanBanner;
+            private set
+            {
+                _clanBanner = value;
+                OnPropertyChangedWithValue(value);
+                OnPropertyChanged(nameof(HasClanBanner));
+            }
+        }
+
+        [DataSourceProperty]
+        public bool HasClanBanner => _clanBanner != null;
+
+        [DataSourceProperty]
+        public bool CharacterHidden
+        {
+            get => _characterHidden;
+            private set
+            {
+                if (_characterHidden == value) return;
+                _characterHidden = value;
+                OnPropertyChangedWithValue(value);
+            }
+        }
+
+        [DataSourceProperty]
+        public string TitleName
+        {
+            get => _titleName;
+            private set { _titleName = value; OnPropertyChangedWithValue(value); }
+        }
+
+        [DataSourceProperty]
+        public string RankText
+        {
+            get => _rankText;
+            private set { _rankText = value; OnPropertyChangedWithValue(value); }
+        }
+
+        [DataSourceProperty]
+        public string HolderName
+        {
+            get => _holderName;
+            private set { _holderName = value; OnPropertyChangedWithValue(value); }
+        }
+
+        [DataSourceProperty]
+        public string DeJureText
+        {
+            get => _deJureText;
+            private set { _deJureText = value; OnPropertyChangedWithValue(value); }
+        }
+
+        [DataSourceProperty]
+        public string DeFactoText
+        {
+            get => _deFactoText;
+            private set { _deFactoText = value; OnPropertyChangedWithValue(value); }
+        }
+
+        [DataSourceProperty]
+        public string LawsText
+        {
+            get => _lawsText;
+            private set { _lawsText = value; OnPropertyChangedWithValue(value); }
+        }
+
+        [DataSourceProperty]
+        public string ClaimText
+        {
+            get => _claimText;
+            private set { _claimText = value; OnPropertyChangedWithValue(value); }
+        }
+
+        [DataSourceProperty]
+        public bool CanClaim
+        {
+            get => _canClaim;
+            private set
+            {
+                if (_canClaim == value) return;
+                _canClaim = value;
+                OnPropertyChangedWithValue(value);
+            }
+        }
+
+        [DataSourceProperty]
+        public bool CanDucalPolitics
+        {
+            get => _canDucalPolitics;
+            private set
+            {
+                if (_canDucalPolitics == value) return;
+                _canDucalPolitics = value;
+                OnPropertyChangedWithValue(value);
+            }
+        }
+
+        [DataSourceProperty]
+        public bool HasHolder => _owner != null;
+
+        internal void Open(FeudalTitle title)
+        {
+            if (title == null) return;
+            _title = title;
+            RefreshValuesForTitle();
+            IsOpen = true;
+        }
+
+        internal void Close()
+        {
+            IsOpen = false;
+        }
+
+        public void ExecuteClose()
+        {
+            Close();
+        }
+
+        public void ExecuteFeudalActions()
+        {
+            if (_title == null) return;
+            FeudalActionsMenu.Open(_title, RefreshAfterAction);
+        }
+
+        public void ExecuteClaim()
+        {
+            if (_title == null) return;
+            KingdomHierarchyTab.ConfirmClaim(_title, RefreshAfterAction);
+        }
+
+        public void ExecuteSupport()
+        {
+            if (!CanDucalPolitics || _title == null) return;
+            DisputeMenu.PreviewDucalSupport(_title, Hero.MainHero, RefreshAfterAction);
+        }
+
+        public void ExecuteDucalDispute()
+        {
+            if (!CanDucalPolitics || _title == null) return;
+            DisputeMenu.OpenDucal(_title, RefreshAfterAction);
+        }
+
+        public void ExecuteEncyclopedia()
+        {
+            if (_owner == null || Campaign.Current?.EncyclopediaManager == null) return;
+            Campaign.Current.EncyclopediaManager.GoToLink(_owner.EncyclopediaLink);
+        }
+
+        private void RefreshAfterAction()
+        {
+            if (_title == null) return;
+            _hierarchy.RefreshAfterTitleAction(_title);
+        }
+
+        private void RefreshValuesForTitle()
+        {
+            _owner = _hierarchy.Owner(_title);
+            TitleName = _title.FullName?.ToString() ?? _title.StringId ?? "Título";
+            RankText = TextHelper.GetRankName(_title.TitleType);
+            HolderName = _owner?.Name?.ToString() ?? "Título vago";
+            DeJureText = "De jure: " + (_title.deJure?.Name?.ToString() ?? "Vago");
+            DeFactoText = "De facto: " + (_title.DeFactoHolder?.Name?.ToString() ?? "Vago");
+            LawsText =
+                "Herança: " + RealmLaw.Translate(_title.Contract?.Inheritance?.StringId) +
+                "   •   Sucessão: " + RealmLaw.Translate(_title.Contract?.Succession?.StringId) +
+                "   •   Gênero: " + RealmLaw.Translate(_title.Contract?.GenderLaw?.StringId);
+
+            var claim = TitleManager.Instance?.GetModel()?.GetClaimAction(_title, Hero.MainHero);
+            CanClaim = claim != null && claim.Possible;
+            ClaimText = CanClaim
+                ? $"Custo da reivindicação: {claim.Gold:0} ouro, {claim.Influence:0} influência, {claim.Renown:0} renome"
+                : "Reivindicação: " + (claim?.Reason?.ToString() ?? "indisponível");
+
+            CanDucalPolitics =
+                _title.TitleType == TitleType.Dukedom &&
+                _title.deJure != null &&
+                _title.deJure != Hero.MainHero;
+
+            Character = new HeroViewModel(CharacterViewModel.StanceTypes.EmphasizeFace);
+            CharacterHidden = true;
+            if (_owner != null)
+            {
+                try
+                {
+                    Character.FillFrom(_owner, -1, false, true);
+                    Character.SetEquipment(
+                        EquipmentIndex.ArmorItemEndSlot, default(EquipmentElement));
+                    Character.SetEquipment(
+                        EquipmentIndex.HorseHarness, default(EquipmentElement));
+                    Character.SetEquipment(
+                        EquipmentIndex.NumAllWeaponSlots, default(EquipmentElement));
+                    CharacterHidden = Character.IsHidden;
+                }
+                catch
+                {
+                    Character.IsHidden = true;
+                    CharacterHidden = true;
+                }
+            }
+            else
+            {
+                Character.IsHidden = true;
+            }
+
+            ClanBanner = _owner?.Clan?.Banner != null
+                ? new BannerImageIdentifierVM(_owner.Clan.Banner, true)
+                : null;
+            OnPropertyChanged(nameof(HasHolder));
         }
     }
 }

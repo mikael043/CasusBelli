@@ -1,0 +1,213 @@
+<Prefab>
+  <Window>
+    <Widget IsVisible="@IsOpen" IsEnabled="@IsOpen"
+            WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+            Sprite="BlankWhiteSquare_9" Color="#000000B8">
+      <Children>
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                SuggestedWidth="1180" SuggestedHeight="680"
+                HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Children>
+            <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                         Brush="Standard.Background.Brush" DoNotAcceptEvents="true" />
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                    Sprite="frame_9" DoNotAcceptEvents="true" />
+
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                        SuggestedHeight="54" MarginTop="12" MarginLeft="26" MarginRight="26"
+                        Brush="Encyclopedia.SubPage.Element.Name.Text"
+                        Brush.FontSize="28" Brush.FontColor="#E8D8B4FF"
+                        Brush.TextHorizontalAlignment="Center"
+                        Brush.TextVerticalAlignment="Center"
+                        Text="@TitleName" />
+
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                        SuggestedHeight="28" MarginTop="62" MarginLeft="26" MarginRight="26"
+                        Brush="Encyclopedia.SubPage.Element.Name.Text"
+                        Brush.FontSize="16" Brush.FontColor="#C9C2B6FF"
+                        Brush.TextHorizontalAlignment="Center"
+                        Brush.TextVerticalAlignment="Center"
+                        Text="@RankText" />
+
+            <!-- 3D character, only one active tableau at a time -->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                    SuggestedWidth="470" SuggestedHeight="535"
+                    MarginLeft="25" MarginTop="105">
+              <Children>
+                <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                             Brush="Encyclopedia.SubPage.Element" DoNotAcceptEvents="true" />
+
+                <EncyclopediaCharacterTableauWidget
+                    DataSource="{Character}"
+                    WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                    BodyProperties="@BodyProperties" IsFemale="@IsFemale"
+                    EquipmentCode="@EquipmentCode" CharStringId="@CharStringId"
+                    StanceIndex="@StanceIndex" BannerCodeText="@BannerCodeText"
+                    MountCreationKey="@MountCreationKey" IsEnabled="false"
+                    IsDead="@IsDead" ArmorColor1="@ArmorColor1" ArmorColor2="@ArmorColor2"
+                    IdleAction="@IdleAction" IdleFaceAnim="@IdleFaceAnim"
+                    Race="@Race" IsHidden="@IsHidden"
+                    MarginLeft="8" MarginRight="8" MarginTop="8" MarginBottom="8"
+                    VerticalAlignment="Center" />
+
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                        Sprite="Encyclopedia\hero_silhouette"
+                        IsVisible="@CharacterHidden" IsEnabled="false" />
+
+                <Widget IsVisible="@HasClanBanner"
+                        WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                        SuggestedWidth="66" SuggestedHeight="82"
+                        HorizontalAlignment="Right" VerticalAlignment="Top"
+                        MarginRight="12" MarginTop="12">
+                  <Children>
+                    <MaskedTextureWidget DataSource="{ClanBanner}"
+                        WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                        Brush="Flat.Tuple.Banner.Small.Hero"
+                        AdditionalArgs="@AdditionalArgs" ImageId="@Id"
+                        TextureProviderName="@TextureProviderName"
+                        IsDisabled="true" />
+                  </Children>
+                </Widget>
+
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                            SuggestedHeight="42" VerticalAlignment="Bottom" MarginBottom="8"
+                            Brush="Encyclopedia.SubPage.Element.Name.Text"
+                            Brush.FontSize="20" Brush.FontColor="#F0E8D8FF"
+                            Brush.TextHorizontalAlignment="Center"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="@HolderName" />
+              </Children>
+            </Widget>
+
+            <!-- Right-side action panel -->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                    SuggestedWidth="620" SuggestedHeight="535"
+                    HorizontalAlignment="Right" MarginRight="25" MarginTop="105">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                            SuggestedHeight="34" MarginTop="4"
+                            Brush="Encyclopedia.SubPage.Element.Name.Text"
+                            Brush.FontSize="19" Brush.FontColor="#E3D6C0FF"
+                            Brush.TextHorizontalAlignment="Left"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="@DeJureText" />
+
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                            SuggestedHeight="34" MarginTop="40"
+                            Brush="Encyclopedia.SubPage.Element.Name.Text"
+                            Brush.FontSize="19" Brush.FontColor="#E3D6C0FF"
+                            Brush.TextHorizontalAlignment="Left"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="@DeFactoText" />
+
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                            SuggestedHeight="58" MarginTop="82"
+                            Brush="Encyclopedia.SubPage.Element.Name.Text"
+                            Brush.FontSize="15" Brush.FontColor="#C8BEAEFF"
+                            Brush.TextHorizontalAlignment="Left"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="@LawsText" />
+
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                            SuggestedHeight="50" MarginTop="145"
+                            Brush="Encyclopedia.SubPage.Element.Name.Text"
+                            Brush.FontSize="14" Brush.FontColor="#BCAF9EFF"
+                            Brush.TextHorizontalAlignment="Left"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="@ClaimText" />
+
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren"
+                           MarginTop="210"
+                           StackLayout.LayoutMethod="VerticalTopToBottom">
+                  <Children>
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                                  SuggestedHeight="52" Brush="ButtonBrush2"
+                                  Command.Click="ExecuteFeudalActions"
+                                  UpdateChildrenStates="true">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                                    Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                                    Brush.TextHorizontalAlignment="Center"
+                                    Brush.TextVerticalAlignment="Center"
+                                    Text="Atos feudais e reconhecimento" />
+                      </Children>
+                    </ButtonWidget>
+
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                                  SuggestedHeight="52" MarginTop="6"
+                                  Brush="ButtonBrush2" Command.Click="ExecuteClaim"
+                                  IsEnabled="@CanClaim" UpdateChildrenStates="true">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                                    Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                                    Brush.TextHorizontalAlignment="Center"
+                                    Brush.TextVerticalAlignment="Center"
+                                    Text="Fabricar reivindicação" />
+                      </Children>
+                    </ButtonWidget>
+
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                                  SuggestedHeight="52" MarginTop="6"
+                                  Brush="ButtonBrush2" Command.Click="ExecuteSupport"
+                                  IsVisible="@CanDucalPolitics" IsEnabled="@CanDucalPolitics"
+                                  UpdateChildrenStates="true">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                                    Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                                    Brush.TextHorizontalAlignment="Center"
+                                    Brush.TextVerticalAlignment="Center"
+                                    Text="Consultar apoio político" />
+                      </Children>
+                    </ButtonWidget>
+
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                                  SuggestedHeight="52" MarginTop="6"
+                                  Brush="ButtonBrush2" Command.Click="ExecuteDucalDispute"
+                                  IsVisible="@CanDucalPolitics" IsEnabled="@CanDucalPolitics"
+                                  UpdateChildrenStates="true">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                                    Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                                    Brush.TextHorizontalAlignment="Center"
+                                    Brush.TextVerticalAlignment="Center"
+                                    Text="Abrir disputa ducal" />
+                      </Children>
+                    </ButtonWidget>
+
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed"
+                                  SuggestedHeight="52" MarginTop="6"
+                                  Brush="ButtonBrush2" Command.Click="ExecuteEncyclopedia"
+                                  IsEnabled="@HasHolder" UpdateChildrenStates="true">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                                    Brush="Clan.TabControl.Text" Brush.FontSize="20"
+                                    Brush.TextHorizontalAlignment="Center"
+                                    Brush.TextVerticalAlignment="Center"
+                                    Text="Abrir personagem na enciclopédia" />
+                      </Children>
+                    </ButtonWidget>
+                  </Children>
+                </ListPanel>
+              </Children>
+            </Widget>
+
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
+                          SuggestedWidth="180" SuggestedHeight="44"
+                          HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                          MarginRight="25" MarginBottom="18"
+                          Brush="ButtonBrush2" Command.Click="ExecuteClose"
+                          UpdateChildrenStates="true">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                            Brush="Clan.TabControl.Text" Brush.FontSize="19"
+                            Brush.TextHorizontalAlignment="Center"
+                            Brush.TextVerticalAlignment="Center"
+                            Text="Voltar à árvore" />
+              </Children>
+            </ButtonWidget>
+          </Children>
+        </Widget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

@@ -22,18 +22,13 @@
                           DoNotPassEventsToChildren="true"
                           UpdateChildrenStates="true">
               <Children>
-                <EncyclopediaCharacterTableauWidget
-                    DataSource="{ImageIdentifier}"
+                <ImageIdentifierWidget
+                    DataSource="{PortraitIdentifier}"
                     WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
-                    BodyProperties="@BodyProperties" IsFemale="@IsFemale"
-                    EquipmentCode="@EquipmentCode" CharStringId="@CharStringId"
-                    StanceIndex="@StanceIndex" BannerCodeText="@BannerCodeText"
-                    MountCreationKey="@MountCreationKey" IsEnabled="false"
-                    IsDead="@IsDead" ArmorColor1="@ArmorColor1" ArmorColor2="@ArmorColor2"
-                    IdleAction="@IdleAction" IdleFaceAnim="@IdleFaceAnim"
-                    Race="@Race" IsHidden="@IsHidden"
                     MarginLeft="4" MarginRight="4" MarginTop="4" MarginBottom="4"
-                    VerticalAlignment="Center" />
+                    AdditionalArgs="@AdditionalArgs" ImageId="@Id"
+                    TextureProviderName="@TextureProviderName"
+                    IsEnabled="false" />
                 <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
                         Sprite="Encyclopedia\hero_silhouette"
                         IsVisible="@IsHidden" IsEnabled="false" />
