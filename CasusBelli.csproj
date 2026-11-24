@@ -245,6 +245,7 @@
     <Compile Include="UI\Titles\TitleElementVM.cs" />
     <Compile Include="UI\Titles\KingdomHierarchyTab.cs" />
     <Compile Include="UI\Titles\KingdomHierarchyVM.cs" />
+    <Compile Include="UI\Titles\KingdomHierarchyDetailsWindow.cs" />
     <Compile Include="UI\Titles\KingdomHierarchyPrefab.cs" />
     <Compile Include="UI\Titles\FeudalHierarchyTree.cs" />
     <Compile Include="UI\Titles\DemesneHierarchyVM.cs" />

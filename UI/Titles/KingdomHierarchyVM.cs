@@ -571,10 +571,27 @@ namespace CasusBelli.UI.Titles
             RefreshValuesForTitle();
             IsOpen = true;
             _hierarchy.NotifyDetailsStateChanged();
+
+            if (!KingdomHierarchyDetailsWindow.Open(this))
+                OnLayerClosed();
         }
 
         internal void Close()
         {
+            if (!IsOpen)
+            {
+                KingdomHierarchyDetailsWindow.Close(this);
+                return;
+            }
+
+            KingdomHierarchyDetailsWindow.Close(this);
+            if (IsOpen)
+                OnLayerClosed();
+        }
+
+        internal void OnLayerClosed()
+        {
+            if (!IsOpen) return;
             IsOpen = false;
             _hierarchy.NotifyDetailsStateChanged();
         }
@@ -587,37 +604,49 @@ namespace CasusBelli.UI.Titles
         public void ExecuteFeudalActions()
         {
             if (_title == null) return;
-            FeudalActionsMenu.Open(_title, RefreshAfterAction);
+            var title = _title;
+            Close();
+            FeudalActionsMenu.Open(title, () => RefreshAfterAction(title));
         }
 
         public void ExecuteClaim()
         {
             if (_title == null) return;
-            KingdomHierarchyTab.ConfirmClaim(_title, RefreshAfterAction);
+            var title = _title;
+            Close();
+            KingdomHierarchyTab.ConfirmClaim(title, () => RefreshAfterAction(title));
         }
 
         public void ExecuteSupport()
         {
             if (!CanDucalPolitics || _title == null) return;
-            DisputeMenu.PreviewDucalSupport(_title, Hero.MainHero, RefreshAfterAction);
+            var title = _title;
+            Close();
+            DisputeMenu.PreviewDucalSupport(title, Hero.MainHero,
+                () => RefreshAfterAction(title));
         }
 
         public void ExecuteDucalDispute()
         {
             if (!CanDucalPolitics || _title == null) return;
-            DisputeMenu.OpenDucal(_title, RefreshAfterAction);
+            var title = _title;
+            Close();
+            DisputeMenu.OpenDucal(title, () => RefreshAfterAction(title));
         }
 
         public void ExecuteEncyclopedia()
         {
             if (_owner == null || Campaign.Current?.EncyclopediaManager == null) return;
-            Campaign.Current.EncyclopediaManager.GoToLink(_owner.EncyclopediaLink);
+            string link = _owner.EncyclopediaLink;
+            Close();
+            Campaign.Current.EncyclopediaManager.GoToLink(link);
         }
 
-        private void RefreshAfterAction()
+        private void RefreshAfterAction(FeudalTitle title)
         {
-            if (_title == null) return;
-            _hierarchy.RefreshAfterTitleAction(_title);
+            if (title == null) return;
+            _title = title;
+            _hierarchy.RefreshAfterTitleAction(title);
         }
 
         private void RefreshValuesForTitle()

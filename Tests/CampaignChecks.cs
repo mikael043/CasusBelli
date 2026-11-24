@@ -568,11 +568,14 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
     detailsXml.SelectSingleNode("//*[@Command.Click='ExecuteClose']")!=null,
     "Details prefab must contain one 3D character and right-side title actions");
   Require(detailsXml.SelectSingleNode("//ButtonWidget[@Id='CbTitleDetailsModalBlocker'][@Command.Click='ExecuteClose']")!=null &&
-    detailsXml.SelectSingleNode("//Widget[@RenderLate='true']")!=null &&
-    hierarchyXml.SelectSingleNode("//Widget[@Id='CbHierarchyInteractiveLayer'][@CanAcceptEvents='@CanInteractHierarchy'][@IsEnabled='@CanInteractHierarchy']")!=null,
-    "Details popup must disable hierarchy input while modal is open");
-  Require(hierarchyXml.SelectSingleNode("//CBKingdomHierarchyDetails[@DataSource='{Details}']")!=null,
-    "Hierarchy prefab must host the title details window");
+    detailsXml.SelectSingleNode("//Widget[@RenderLate='true']")!=null,
+    "Details movie must contain its own modal blocker");
+  Require(hierarchyXml.SelectSingleNode("//CBKingdomHierarchyDetails")==null,
+    "Details must not be embedded inside the kingdom hierarchy widget tree");
+  var detailsWindowType=asm.GetType("CasusBelli.UI.Titles.KingdomHierarchyDetailsWindow",true);
+  Require(detailsWindowType.BaseType.Name=="GlobalLayer" &&
+    (int)detailsWindowType.GetField("LayerPriority",BindingFlags.Static|BindingFlags.NonPublic|BindingFlags.Public).GetRawConstantValue()>=1000,
+    "Title details must use a high-priority GlobalLayer for modal input");
 
   foreach(var typeName in new[]{
     "CasusBelli.UI.Titles.KingdomHierarchyTabPrefabPatch",
