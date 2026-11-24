@@ -562,6 +562,10 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
     detailsXml.SelectSingleNode("//*[@Command.Click='ExecuteClaim']")!=null &&
     detailsXml.SelectSingleNode("//*[@Command.Click='ExecuteClose']")!=null,
     "Details prefab must contain one 3D character and right-side title actions");
+  Require(detailsXml.SelectSingleNode("//ButtonWidget[@Id='CbTitleDetailsModalBlocker'][@Command.Click='ExecuteClose']")!=null &&
+    detailsXml.SelectSingleNode("//ButtonWidget[@Id='CbTitleDetailsPanelBlocker']")!=null &&
+    detailsXml.SelectSingleNode("//Widget[@RenderLate='true']")!=null,
+    "Details popup must capture modal input instead of passing clicks to the tree");
   Require(hierarchyXml.SelectSingleNode("//CBKingdomHierarchyDetails[@DataSource='{Details}']")!=null,
     "Hierarchy prefab must host the title details window");
 

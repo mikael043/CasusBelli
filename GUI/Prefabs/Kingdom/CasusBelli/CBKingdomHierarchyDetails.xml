@@ -2,12 +2,31 @@
   <Window>
     <Widget IsVisible="@IsOpen" IsEnabled="@IsOpen"
             WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
-            Sprite="BlankWhiteSquare_9" Color="#000000B8">
+            RenderLate="true">
       <Children>
+        <!-- Full-screen modal catcher: prevents clicks from reaching the hierarchy.
+             Clicking the dark area outside the window also closes the popup. -->
+        <ButtonWidget Id="CbTitleDetailsModalBlocker"
+                      WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                      Sprite="BlankWhiteSquare"
+                      Brush.Color="#000000FF" Brush.AlphaFactor="0.72"
+                      Command.Click="ExecuteClose"
+                      DoNotPassEventsToChildren="true"
+                      UpdateChildrenStates="true" />
+
         <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed"
                 SuggestedWidth="1180" SuggestedHeight="680"
                 HorizontalAlignment="Center" VerticalAlignment="Center">
           <Children>
+            <!-- Catch clicks on empty parts of the dialog itself, so only clicks
+                 outside the framed window reach the modal blocker above. -->
+            <ButtonWidget Id="CbTitleDetailsPanelBlocker"
+                          WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                          Sprite="BlankWhiteSquare"
+                          Brush.Color="#00000000"
+                          DoNotPassEventsToChildren="true"
+                          UpdateChildrenStates="true" />
+
             <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
                          Brush="Standard.Background.Brush" DoNotAcceptEvents="true" />
             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
