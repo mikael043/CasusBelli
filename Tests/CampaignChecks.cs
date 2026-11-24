@@ -499,25 +499,40 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
   btn.ClickEventHandlers.Single()(btn);
   var page=rootWidget.FindChild("CbKingdomPanel"); if(!page.IsVisible || page.GetChild(0).ChildCount!=5 || page.GetChild(0).FindChild("CbPolitics")==null)throw new Exception("Submenu");
   Func<string,Widget> findHierarchy=id=>rootWidget.GetAllChildrenRecursive().FirstOrDefault(w=>w.Id==id);
-  var outline=findHierarchy("CbHierarchyTree");
+  var visualTree=findHierarchy("CbHierarchyTree");
   var scroll=findHierarchy("CbHierarchyScroll");
-  Require(outline!=null && scroll is ScrollablePanel && outline.ChildCount>1,
-    "Embedded scrollable hierarchy tree must appear in the kingdom tab");
-  int expandedCount=outline.ChildCount;
-  var collapseAll=(ButtonWidget)findHierarchy("CbCollapseAll");
-  collapseAll.ClickEventHandlers.Single()(collapseAll);
-  Require(outline.ChildCount==m.GetSovereignTitleList(kingdoms[0]).Count,
-    "Collapse all should leave only kingdom roots");
-  var expandAll=(ButtonWidget)findHierarchy("CbExpandAll");
-  expandAll.ClickEventHandlers.Single()(expandAll);
-  Require(outline.ChildCount>=expandedCount && outline.ChildCount>m.GetSovereignTitleList(kingdoms[0]).Count,
-    "Expand all should reveal descendants across all levels");
+  Require(visualTree!=null && scroll!=null &&
+    scroll.GetType().Name=="EncyclopediaTroopScrollablePanel" &&
+    findHierarchy("CbHorizontalScroll") is ScrollbarWidget &&
+    findHierarchy("CbVerticalScroll") is ScrollbarWidget,
+    "Feudal tree must use the native pannable panel with two-axis scrolling");
+  var panProp=scroll.GetType().GetProperty("PanWithMouseEnabled");
+  Require(panProp!=null && (bool)panProp.GetValue(scroll),
+    "Feudal tree must support mouse panning");
+  var allWidgets=rootWidget.GetAllChildrenRecursive().ToList();
+  int cardCount=allWidgets.OfType<ButtonWidget>()
+    .Count(w=>w.Id!=null && w.Id.StartsWith("CbSelectTitle_"));
+  int nativeNodeCount=allWidgets.Count(w=>w.GetType().Name=="EncyclopediaUnitTreeNodeItemBrushWidget");
+  Require(cardCount==allVlandia.Count() && nativeNodeCount==allVlandia.Count(),
+    "Native visual tree must render every feudal title exactly once");
+  string dukeId=m.GetImmediateSuzerain(m.GetTitleByStringId("town_V1")).StringId;
+  var dukeNode=findHierarchy("CbTreeNode_"+dukeId);
+  Require(dukeNode!=null && dukeNode.GetType().Name=="EncyclopediaUnitTreeNodeItemBrushWidget",
+    "Duchy must render as a native connector node");
+  var childPanel=dukeNode.GetAllChildrenRecursive().OfType<ListPanel>()
+    .FirstOrDefault(w=>w.Id=="ChildContainer");
+  Require(childPanel!=null && childPanel.ChildCount>0,
+    "Native duchy connector must contain its county branches");
   var chosen=(ButtonWidget)findHierarchy("CbSelectTitle_town_V1");
-  Require(chosen!=null,"County must be directly selectable from the tree");
+  Require(chosen!=null,"County must be directly selectable in visual tree");
   chosen.ClickEventHandlers.Single()(chosen);
   Require(((TextWidget)findHierarchy("CbSelectedTitle")).Text
     .Contains(m.GetTitleByStringId("town_V1").FullName.ToString()),
-    "Title selection should update the footer");
+    "Selecting county card must update title details");
+  Require(((TextWidget)findHierarchy("CbDiagramCount")).Text.Contains("ducados") &&
+    ((TextWidget)findHierarchy("CbDiagramCount")).Text.Contains("baronias"),
+    "Hierarchy header must summarize title ranks");
+  Console.WriteLine("Native feudal portrait tree: all titles, connector branches, panning and two-axis scrolling passed");
   tab.GetMethod("OpenHierarchy",BindingFlags.NonPublic|BindingFlags.Static).Invoke(null,new object[]{kingdoms[0]});
   if(shown==null || shown.InquiryElements.Count!=2 || shown.InquiryElements.Any(x=>Equals(x.Identifier,"council")) || shown.InquiryElements.Any(x=>Equals(x.Identifier,"peers")))throw new Exception("Kingdom root");
   foreach(var id in new[]{"vlandia_sovereign",m.GetImmediateSuzerain(m.GetTitleByStringId("town_V1")).StringId,"town_V1"}){

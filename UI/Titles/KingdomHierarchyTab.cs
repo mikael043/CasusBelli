@@ -4,6 +4,8 @@ using HarmonyLib;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.GauntletUI;
 using TaleWorlds.GauntletUI.BaseTypes;
+using TaleWorlds.MountAndBlade.GauntletUI.Widgets;
+using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Encyclopedia;
 using TaleWorlds.MountAndBlade.GauntletUI.Widgets.Kingdom;
 using CasusBelli.Managers.Titles;
 using TaleWorlds.CampaignSystem;
@@ -73,89 +75,80 @@ namespace CasusBelli.UI.Titles
         }
 
 
-        // The hierarchy is embedded in the existing kingdom tab. Only one branch page is rendered.
+        // Feudal diagram: crowns above their vassals, portraits and coats of arms,
+        // gold connectors, independent branch expansion and two-axis navigation.
         private sealed class EmbeddedHierarchy
         {
             private readonly Widget _body;
-            private readonly Widget _left;
-            private readonly Widget _right;
             private readonly ButtonWidget _template;
             private readonly TextWidget _caption;
-            private readonly Dictionary<Kingdom, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.BannerImageIdentifierVM> _banners =
-                new Dictionary<Kingdom, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.BannerImageIdentifierVM>();
-            private readonly HashSet<FeudalTitle> _expanded = new HashSet<FeudalTitle>();
+            private readonly Dictionary<Hero, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.CharacterImageIdentifierVM> _portraits =
+                new Dictionary<Hero, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.CharacterImageIdentifierVM>();
+            private readonly Dictionary<Hero, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.BannerImageIdentifierVM> _crests =
+                new Dictionary<Hero, TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.BannerImageIdentifierVM>();
+            private readonly Dictionary<FeudalTitle, Widget> _nodeWidgets = new Dictionary<FeudalTitle, Widget>();
             private FeudalHierarchyTree _tree;
-            private ScrollablePanel _scroll;
-            private ListPanel _items;
+            private EncyclopediaTroopScrollablePanel _scroll;
+            private ListPanel _treeHost;
             private TextWidget _selectionInfo;
             private TextWidget _countInfo;
             private Kingdom _realm;
             private FeudalTitle _title;
             private bool _deFacto;
-            private int _realmPage;
 
             internal EmbeddedHierarchy(Widget panel, ButtonWidget template, TextWidget caption)
             {
-                _template = template; _caption = caption;
-                _body = new Widget(panel.Context) { WidthSizePolicy = SizePolicy.StretchToParent, HeightSizePolicy = SizePolicy.StretchToParent,
-                    MarginTop = 75, MarginBottom = 12, MarginLeft = 20, MarginRight = 20 };
+                _template = template;
+                _caption = caption;
+                _body = new Widget(panel.Context)
+                {
+                    Id = "CbDiagramBody",
+                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    HeightSizePolicy = SizePolicy.StretchToParent,
+                    MarginLeft = 12,
+                    MarginRight = 12,
+                    MarginTop = 75,
+                    MarginBottom = 10,
+                    IsVisible = true
+                };
                 panel.AddChild(_body);
-                _left = new BrushWidget(panel.Context) { WidthSizePolicy = SizePolicy.Fixed, SuggestedWidth = 280,
-                    HeightSizePolicy = SizePolicy.StretchToParent, Brush = panel.Context.GetBrush("Standard.Background.Brush") };
-                _right = new Widget(panel.Context) { WidthSizePolicy = SizePolicy.StretchToParent, HeightSizePolicy = SizePolicy.StretchToParent,
-                    MarginLeft = 300, MarginRight = 15 };
-                _body.AddChild(_left); _body.AddChild(_right);
             }
 
             internal void Open(Kingdom kingdom)
             {
-                if (kingdom == null) return;
+                if (kingdom == null || TitleManager.Instance == null) return;
                 _body.IsVisible = true;
+                _realm = kingdom;
                 _deFacto = false;
-                _realmPage = 0;
-                SelectRealm(kingdom);
+                RebuildModel(true);
+                Draw();
             }
 
             internal void Hide()
             {
                 _body.IsVisible = false;
-                _right.RemoveAllChildren();
-                _left.RemoveAllChildren();
+                _body.RemoveAllChildren();
                 _scroll = null;
-                _items = null;
+                _treeHost = null;
                 _selectionInfo = null;
                 _countInfo = null;
-                _banners.Clear();
+                _nodeWidgets.Clear();
+                _portraits.Clear();
+                _crests.Clear();
             }
 
-            private void SelectRealm(Kingdom kingdom)
-            {
-                if (kingdom == null || TitleManager.Instance == null) return;
-                _realm = kingdom;
-                RebuildModel(true);
-                Draw();
-            }
-
-            private void RebuildModel(bool expandAll)
+            private void RebuildModel(bool resetSelection)
             {
                 var manager = TitleManager.Instance;
                 _tree = FeudalHierarchyTree.Build(
-                    _realm, _deFacto, manager.GetSovereignTitleList(_realm),
-                    manager.AllTitles);
-                if (expandAll) _expanded.Clear();
-                _expanded.RemoveWhere(t => !_tree.Titles.Contains(t));
-                // Open the crown and duchies by default. Counties, baronies
-                // and lordships remain one click away, keeping large kingdoms fast.
-                if (expandAll)
-                    foreach (var t in _tree.Titles)
-                        if (t.TitleType <= TitleType.Dukedom) _expanded.Add(t);
-                if (_title == null || !_tree.Titles.Contains(_title))
+                    _realm, _deFacto, manager.GetSovereignTitleList(_realm), manager.AllTitles);
+                if (resetSelection || _title == null || !_tree.Titles.Contains(_title))
                     _title = _tree.Roots.FirstOrDefault();
             }
 
             private void ChangeMode(bool deFacto)
             {
-                if (_deFacto == deFacto || _realm == null) return;
+                if (_deFacto == deFacto) return;
                 _deFacto = deFacto;
                 RebuildModel(true);
                 Draw();
@@ -164,75 +157,67 @@ namespace CasusBelli.UI.Titles
             private Hero Owner(FeudalTitle t) =>
                 t == null ? null : _deFacto ? t.DeFactoHolder : t.deJure;
 
-            private TextWidget Label(Widget parent, string value, float width, float height, float top = 0)
+            private ButtonWidget Button(Widget parent, string label, System.Action click,
+                float width, float height = 39)
             {
-                var label = new TextWidget(parent.Context) { WidthSizePolicy = width > 0 ? SizePolicy.Fixed : SizePolicy.StretchToParent,
-                    SuggestedWidth = width, HeightSizePolicy = SizePolicy.Fixed, SuggestedHeight = height,
-                    HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top,
-                    MarginTop = top, Brush = _caption.ReadOnlyBrush, Text = value, DoNotAcceptEvents = true };
-                parent.AddChild(label); return label;
-            }
-            private ButtonWidget Button(Widget parent, string text, System.Action action, float width, float height = 46)
-            {
-                var b = CreateButton(_template, _caption, "", text, action);
-                b.WidthSizePolicy = SizePolicy.Fixed; b.SuggestedWidth = width;
-                b.HeightSizePolicy = SizePolicy.Fixed; b.SuggestedHeight = height;
-                b.PositionYOffset = 0; b.VerticalAlignment = VerticalAlignment.Top;
-                parent.AddChild(b); return b;
-            }
-            private ListPanel Row(Widget parent, float top)
-            {
-                var r = new ListPanel(parent.Context) { WidthSizePolicy = SizePolicy.CoverChildren, HeightSizePolicy = SizePolicy.CoverChildren,
-                    HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top, MarginTop = top,
-                    StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.HorizontalLeftToRight } };
-                parent.AddChild(r); return r;
-            }
-            private Widget Line(Widget parent, float width, float height, float top)
-            {
-                var line = new Widget(parent.Context) { WidthSizePolicy = SizePolicy.Fixed, HeightSizePolicy = SizePolicy.Fixed,
-                    SuggestedWidth = width, SuggestedHeight = height, HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Top, MarginTop = top, DoNotAcceptEvents = true,
-                    Color = Color.FromUint(0xC3A05EFF) };
-                // SpriteData is not guaranteed while Gauntlet is still constructing or in the
-                // lightweight integration harness. Keep hierarchy navigation usable even then;
-                // the connector simply remains invisible until a fully initialized UI context.
-                if (parent.Context.SpriteData != null)
-                    line.Sprite = parent.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
-                parent.AddChild(line); return line;
-            }
-            private void Banner(Widget parent, Kingdom kingdom, float size)
-            {
-                if (kingdom?.Banner == null) return;
-                if (!_banners.TryGetValue(kingdom, out var id))
-                    _banners[kingdom] = id = new TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.BannerImageIdentifierVM(kingdom.Banner, true);
-                var img = new MaskedTextureWidget(parent.Context) {
-                    WidthSizePolicy = SizePolicy.Fixed, HeightSizePolicy = SizePolicy.Fixed, SuggestedWidth = size, SuggestedHeight = size,
-                    HorizontalAlignment = HorizontalAlignment.Left, VerticalAlignment = VerticalAlignment.Center, MarginLeft = 8,
-                    DoNotAcceptEvents = true, Brush = parent.Context.GetBrush("Flat.Tuple.Banner.Small.Hero"),
-                    ImageId = id.Id, AdditionalArgs = id.AdditionalArgs, TextureProviderName = id.TextureProviderName };
-                parent.AddChild(img);
-            }
-            private ButtonWidget TreeButton(Widget parent, string text, System.Action action,
-                float width, bool stretch = false)
-            {
-                var b = CreateButton(_template, _caption, "", text, action);
-                b.WidthSizePolicy = stretch ? SizePolicy.StretchToParent : SizePolicy.Fixed;
-                if (!stretch) b.SuggestedWidth = width;
+                var b = CreateButton(_template, _caption, "", label, click);
+                b.WidthSizePolicy = SizePolicy.Fixed;
                 b.HeightSizePolicy = SizePolicy.Fixed;
-                b.SuggestedHeight = 39;
-                b.VerticalAlignment = VerticalAlignment.Center;
+                b.SuggestedWidth = width;
+                b.SuggestedHeight = height;
                 b.PositionYOffset = 0;
-                var label = b.FindChild(w => w is TextWidget) as TextWidget;
-                if (label != null)
-                {
-                    label.HorizontalAlignment = HorizontalAlignment.Left;
-                    label.WidthSizePolicy = SizePolicy.StretchToParent;
-                    label.MarginLeft = 10;
-                    label.MarginRight = 6;
-                    label.CanBreakWords = false;
-                }
+                b.VerticalAlignment = VerticalAlignment.Center;
                 parent.AddChild(b);
                 return b;
+            }
+
+            private ListPanel Row(Widget parent, float top)
+            {
+                var row = new ListPanel(parent.Context)
+                {
+                    WidthSizePolicy = SizePolicy.CoverChildren,
+                    HeightSizePolicy = SizePolicy.CoverChildren,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    MarginTop = top,
+                    StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.HorizontalLeftToRight }
+                };
+                parent.AddChild(row);
+                return row;
+            }
+
+            private TextWidget Label(Widget parent, string value, float top,
+                float height, float width = 0)
+            {
+                var label = new TextWidget(parent.Context)
+                {
+                    WidthSizePolicy = width > 0 ? SizePolicy.Fixed : SizePolicy.StretchToParent,
+                    SuggestedWidth = width,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedHeight = height,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    MarginTop = top,
+                    Brush = _caption.ReadOnlyBrush,
+                    Text = value,
+                    DoNotAcceptEvents = true
+                };
+                parent.AddChild(label);
+                return label;
+            }
+
+            private void SelectRealm()
+            {
+                var options = Kingdom.All.Where(k => k != null && !k.IsEliminated)
+                    .OrderBy(k => k.Name.ToString())
+                    .Select(k => new InquiryElement(k, k.Name.ToString(), null)).ToList();
+                MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(
+                    "Escolher reino", "Selecione o reino para visualizar a hierarquia feudal.",
+                    options, true, 1, 1, "Abrir", "Voltar",
+                    choices => {
+                        if (choices.Count == 1 && choices[0].Identifier is Kingdom selected)
+                            Open(selected);
+                    }, null, isSeachAvailable: true));
             }
 
             private void SelectTitle(FeudalTitle title)
@@ -243,204 +228,494 @@ namespace CasusBelli.UI.Titles
 
             private void UpdateSelection()
             {
-                if (_selectionInfo == null) return;
-                _selectionInfo.Text = _title == null ? "Nenhum título selecionado" :
-                    $"{_title.FullName}  |  Titular {(_deFacto ? "atual" : "de jure")}: {Owner(_title)?.Name?.ToString() ?? "Vago"}";
+                if (_selectionInfo != null)
+                    _selectionInfo.Text = _title == null ? "Selecione um título" :
+                        $"{_title.FullName}  |  Titular {(_deFacto ? "atual" : "de jure")}: {Owner(_title)?.Name?.ToString() ?? "Vago"}";
             }
 
-            private void Toggle(FeudalTitle title)
+            private void FocusSelection()
             {
-                if (!_expanded.Remove(title)) _expanded.Add(title);
-                DrawTree();
-            }
-
-            private void ExpandAll(bool expand)
-            {
-                _expanded.Clear();
-                if (expand && _tree != null)
-                    foreach (var title in _tree.Titles) _expanded.Add(title);
-                DrawTree();
-            }
-
-            // Renders the complete expanded outline into one native scrollable panel.
-            // The scrollbar and the panel survive expansion, preserving scroll position.
-            private void DrawTree()
-            {
-                if (_items == null || _tree == null) return;
-                _items.RemoveAllChildren();
-                var visible = _tree.Visible(_expanded);
-                if (_countInfo != null)
-                    _countInfo.Text = $"{visible.Count} de {_tree.Count} títulos visíveis  •  {(_deFacto ? "Controle de facto" : "Hierarquia de jure")}";
-
-                foreach (var entry in visible)
+                if (_title == null || _scroll == null ||
+                    !_nodeWidgets.TryGetValue(_title, out Widget widget)) return;
+                try
                 {
-                    var title = entry.Title;
-                    var line = new ListPanel(_items.Context)
-                    {
-                        Id = "CbTitleRow_" + (title.StringId ?? ""),
-                        WidthSizePolicy = SizePolicy.StretchToParent,
-                        HeightSizePolicy = SizePolicy.Fixed,
-                        SuggestedHeight = 42,
-                        StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.HorizontalLeftToRight }
-                    };
-                    _items.AddChild(line);
-
-                    if (entry.Depth > 0)
-                        line.AddChild(new Widget(line.Context)
-                        {
-                            WidthSizePolicy = SizePolicy.Fixed,
-                            HeightSizePolicy = SizePolicy.Fixed,
-                            SuggestedWidth = System.Math.Min(180, entry.Depth * 26),
-                            SuggestedHeight = 39,
-                            DoNotAcceptEvents = true
-                        });
-
-                    var toggle = TreeButton(line,
-                        entry.ChildCount == 0 ? "·" : (_expanded.Contains(title) ? "−" : "+"),
-                        () => Toggle(title), 38);
-                    toggle.Id = "CbToggleTitle_" + (title.StringId ?? "");
-                    toggle.IsEnabled = entry.ChildCount > 0;
-
-                    string person = Owner(title)?.Name?.ToString() ?? "Vago";
-                    string name = $"{title.FullName}  •  {person}";
-                    var button = TreeButton(line, name, () => SelectTitle(title), 0, true);
-                    button.Id = "CbSelectTitle_" + (title.StringId ?? "");
-                    TreeButton(line, "Detalhes", () =>
-                    {
-                        SelectTitle(title);
-                        Details();
-                    }, 100);
+                    _scroll.ScrollToChild(widget,
+                        new ScrollablePanel.AutoScrollParameters(0f, 0f, 0f, 0f, 0f, 0f, .2f));
+                }
+                catch (System.Exception ex)
+                {
+                    DebugLog.Log("[Hierarchy] Focar título: " + ex.Message);
                 }
             }
 
             private void Draw()
             {
                 if (_realm == null || _tree == null) return;
-                _left.RemoveAllChildren();
-                _right.RemoveAllChildren();
+                _body.RemoveAllChildren();
                 _scroll = null;
-                _items = null;
+                _treeHost = null;
+                _nodeWidgets.Clear();
 
-                var kingdoms = Kingdom.All.Where(k => !k.IsEliminated)
-                    .OrderBy(k => k.Name.ToString()).ToList();
-                Label(_left, "REINOS", 0, 44);
-                const int realmPageSize = 9;
-                _realmPage = System.Math.Max(0, System.Math.Min(_realmPage,
-                    System.Math.Max(0, (kingdoms.Count - 1) / realmPageSize)));
-                for (int i = 0; i < realmPageSize &&
-                    _realmPage * realmPageSize + i < kingdoms.Count; i++)
+                var header = new Widget(_body.Context)
                 {
-                    var kingdom = kingdoms[_realmPage * realmPageSize + i];
-                    var button = Button(_left, kingdom.Name.ToString(),
-                        () => SelectRealm(kingdom), 270, 54);
-                    button.HorizontalAlignment = HorizontalAlignment.Center;
-                    button.MarginTop = 50 + i * 56;
-                    Banner(button, kingdom, 36);
-                    button.IsEnabled = kingdom != _realm;
-                }
-                var navigation = Row(_left, 565);
-                Button(navigation, "<", () => { _realmPage--; Draw(); }, 65)
-                    .IsEnabled = _realmPage > 0;
-                Button(navigation, ">", () => { _realmPage++; Draw(); }, 65)
-                    .IsEnabled = (_realmPage + 1) * realmPageSize < kingdoms.Count;
+                    Id = "CbHierarchyHeader",
+                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedHeight = 74,
+                    VerticalAlignment = VerticalAlignment.Top
+                };
+                _body.AddChild(header);
 
-                Label(_right, "ÁRVORE FEUDAL  •  " + _realm.Name, 0, 48);
-                var mode = Row(_right, 49);
-                Button(mode, "De jure", () => ChangeMode(false), 154).IsEnabled = _deFacto;
-                Button(mode, "De facto", () => ChangeMode(true), 154).IsEnabled = !_deFacto;
-                var toolbar = Row(_right, 100);
-                Button(toolbar, "Expandir tudo", () => ExpandAll(true), 166).Id = "CbExpandAll";
-                Button(toolbar, "Recolher tudo", () => ExpandAll(false), 166).Id = "CbCollapseAll";
-                Button(toolbar, "Atualizar", () => { RebuildModel(false); Draw(); }, 146);
-                _countInfo = Label(_right, "", 0, 30, 149);
+                DrawRealmBanner(header);
 
-                // Same native ScrollablePanel / ClipRect / InnerPanel / scrollbar
-                // arrangement used by Bannerlord's own initial menu.
-                var viewport = new Widget(_right.Context)
+                var titleBrush = new Brush
                 {
-                    Id = "CbHierarchyViewport",
+                    Font = _caption.ReadOnlyBrush.Font,
+                    FontSize = 24,
+                    FontColor = Color.FromUint(0xE8D8B4FF),
+                    TextHorizontalAlignment = TaleWorlds.TwoDimension.TextHorizontalAlignment.Left,
+                    TextVerticalAlignment = TaleWorlds.TwoDimension.TextVerticalAlignment.Center
+                };
+                var titleText = new TextWidget(header.Context)
+                {
+                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedHeight = 35,
+                    MarginLeft = 58,
+                    MarginRight = 450,
+                    MarginTop = 2,
+                    Brush = titleBrush,
+                    Text = _realm.Name.ToString(),
+                    DoNotAcceptEvents = true
+                };
+                header.AddChild(titleText);
+
+                var titles = _tree.Titles.ToList();
+                string counts =
+                    $"{titles.Count(t => t.TitleType == TitleType.Dukedom)} ducados  " +
+                    $"{titles.Count(t => t.TitleType == TitleType.County)} condados  " +
+                    $"{titles.Count(t => t.TitleType == TitleType.Barony)} baronias  " +
+                    $"{titles.Count(t => t.TitleType == TitleType.Lordship)} senhorios";
+                var subBrush = new Brush
+                {
+                    Font = _caption.ReadOnlyBrush.Font,
+                    FontSize = 13,
+                    FontColor = Color.FromUint(0xC9C2B6FF),
+                    TextHorizontalAlignment = TaleWorlds.TwoDimension.TextHorizontalAlignment.Left,
+                    TextVerticalAlignment = TaleWorlds.TwoDimension.TextVerticalAlignment.Center
+                };
+                _countInfo = new TextWidget(header.Context)
+                {
+                    Id = "CbDiagramCount",
+                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedHeight = 24,
+                    MarginLeft = 58,
+                    MarginRight = 450,
+                    MarginTop = 35,
+                    Brush = subBrush,
+                    Text = counts,
+                    DoNotAcceptEvents = true
+                };
+                header.AddChild(_countInfo);
+
+                var modes = new ListPanel(header.Context)
+                {
+                    WidthSizePolicy = SizePolicy.CoverChildren,
+                    HeightSizePolicy = SizePolicy.CoverChildren,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    MarginTop = 10,
+                    MarginRight = 8,
+                    StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.HorizontalLeftToRight }
+                };
+                header.AddChild(modes);
+                Button(modes, "Trocar reino", SelectRealm, 130, 36);
+                Button(modes, "De facto", () => ChangeMode(true), 104, 36).IsEnabled = !_deFacto;
+                Button(modes, "De jure", () => ChangeMode(false), 104, 36).IsEnabled = _deFacto;
+
+                var divider = new Widget(_body.Context)
+                {
+                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedHeight = 2,
+                    MarginTop = 72,
+                    MarginLeft = 6,
+                    MarginRight = 6,
+                    Color = Color.FromUint(0xA8752FFF),
+                    DoNotAcceptEvents = true
+                };
+                if (_body.Context.SpriteData != null)
+                    divider.Sprite = _body.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+                _body.AddChild(divider);
+
+                var viewport = new Widget(_body.Context)
+                {
+                    Id = "CbDiagramViewport",
                     WidthSizePolicy = SizePolicy.StretchToParent,
                     HeightSizePolicy = SizePolicy.StretchToParent,
-                    VerticalAlignment = VerticalAlignment.Top,
-                    MarginTop = 185,
-                    MarginBottom = 112,
-                    MarginLeft = 10,
-                    MarginRight = 12
+                    MarginTop = 82,
+                    MarginBottom = 58,
+                    MarginLeft = 6,
+                    MarginRight = 6
                 };
-                _right.AddChild(viewport);
-                _scroll = new ScrollablePanel(viewport.Context)
+                _body.AddChild(viewport);
+
+                _scroll = new EncyclopediaTroopScrollablePanel(viewport.Context)
                 {
                     Id = "CbHierarchyScroll",
                     WidthSizePolicy = SizePolicy.StretchToParent,
                     HeightSizePolicy = SizePolicy.StretchToParent,
                     AutoHideScrollBars = true,
                     AutoAdjustScrollbarHandleSize = true,
-                    OnlyAcceptScrollEventIfCanScroll = true
+                    PanWithMouseEnabled = true,
+                    OnlyAcceptScrollEventIfCanScroll = true,
+                    MarginRight = 24,
+                    MarginBottom = 22
                 };
                 viewport.AddChild(_scroll);
+
                 var clip = new Widget(viewport.Context)
                 {
-                    Id = "CbHierarchyClip",
+                    Id = "CbDiagramClip",
                     WidthSizePolicy = SizePolicy.StretchToParent,
                     HeightSizePolicy = SizePolicy.StretchToParent,
-                    MarginRight = 17,
                     ClipContents = true
                 };
                 _scroll.AddChild(clip);
-                _items = new ListPanel(viewport.Context)
+
+                _treeHost = new ListPanel(viewport.Context)
                 {
                     Id = "CbHierarchyTree",
-                    WidthSizePolicy = SizePolicy.StretchToParent,
+                    WidthSizePolicy = SizePolicy.CoverChildren,
                     HeightSizePolicy = SizePolicy.CoverChildren,
-                    VerticalAlignment = VerticalAlignment.Top,
-                    StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.VerticalTopToBottom }
-                };
-                clip.AddChild(_items);
-                _scroll.ClipRect = clip;
-                _scroll.InnerPanel = _items;
-
-                var scrollbar = new ScrollbarWidget(viewport.Context)
-                {
-                    WidthSizePolicy = SizePolicy.Fixed,
-                    SuggestedWidth = 12,
-                    HeightSizePolicy = SizePolicy.StretchToParent,
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    AlignmentAxis = AlignmentAxis.Vertical,
-                    MinValue = 0,
-                    MaxValue = 100
-                };
-                var handle = new Widget(viewport.Context)
-                {
-                    WidthSizePolicy = SizePolicy.Fixed,
-                    HeightSizePolicy = SizePolicy.Fixed,
-                    SuggestedWidth = 7,
-                    SuggestedHeight = 28,
+                    MinWidth = 1050,
+                    MinHeight = 480,
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Color = Color.FromUint(0xC3A05EFF)
+                    VerticalAlignment = VerticalAlignment.Top,
+                    MarginTop = 12,
+                    MarginBottom = 50,
+                    MarginLeft = 45,
+                    MarginRight = 45,
+                    StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.HorizontalLeftToRight }
                 };
-                if (viewport.Context.SpriteData != null)
-                    handle.Sprite = viewport.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
-                scrollbar.AddChild(handle);
-                scrollbar.Handle = handle;
-                viewport.AddChild(scrollbar);
-                _scroll.VerticalScrollbar = scrollbar;
+                clip.AddChild(_treeHost);
+                _scroll.ClipRect = clip;
+                _scroll.InnerPanel = _treeHost;
 
-                _selectionInfo = Label(_right, "", 0, 34);
+                foreach (var root in _tree.Roots)
+                    _treeHost.AddChild(BuildVisualNode(root));
+
+                var vertical = NativeScrollbar(viewport, false);
+                vertical.Id = "CbVerticalScroll";
+                viewport.AddChild(vertical);
+                _scroll.VerticalScrollbar = vertical;
+
+                var horizontal = NativeScrollbar(viewport, true);
+                horizontal.Id = "CbHorizontalScroll";
+                viewport.AddChild(horizontal);
+                _scroll.HorizontalScrollbar = horizontal;
+
+                _selectionInfo = Label(_body, "", 0, 32);
                 _selectionInfo.Id = "CbSelectedTitle";
                 _selectionInfo.VerticalAlignment = VerticalAlignment.Bottom;
                 _selectionInfo.MarginTop = 0;
-                _selectionInfo.MarginBottom = 63;
+                _selectionInfo.MarginBottom = 23;
                 UpdateSelection();
 
-                var footer = Row(_right, 0);
-                footer.VerticalAlignment = VerticalAlignment.Bottom;
-                footer.MarginTop = 0;
-                footer.MarginBottom = 6;
-                Button(footer, "Atos e detalhes", Details, 202).IsEnabled = _title != null;
-                Button(footer, "Fabricar reivindicação",
-                    () => ChooseClaimTitle(() => { if (_body.IsVisible) Draw(); }), 240);
-                DrawTree();
+                var footer = new ListPanel(_body.Context)
+                {
+                    WidthSizePolicy = SizePolicy.CoverChildren,
+                    HeightSizePolicy = SizePolicy.CoverChildren,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    MarginRight = 8,
+                    MarginBottom = 1,
+                    StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.HorizontalLeftToRight }
+                };
+                _body.AddChild(footer);
+                Button(footer, "Centralizar", FocusSelection, 130, 34);
+                Button(footer, "Atos e detalhes", Details, 165, 34);
             }
+
+            private ScrollbarWidget NativeScrollbar(Widget parent, bool horizontal)
+            {
+                var scrollbar = new ScrollbarWidget(parent.Context)
+                {
+                    WidthSizePolicy = horizontal ? SizePolicy.StretchToParent : SizePolicy.Fixed,
+                    HeightSizePolicy = horizontal ? SizePolicy.Fixed : SizePolicy.StretchToParent,
+                    SuggestedWidth = horizontal ? 0 : 26,
+                    SuggestedHeight = horizontal ? 9 : 0,
+                    HorizontalAlignment = horizontal ? HorizontalAlignment.Center : HorizontalAlignment.Right,
+                    VerticalAlignment = horizontal ? VerticalAlignment.Bottom : VerticalAlignment.Center,
+                    MarginLeft = horizontal ? 35 : 0,
+                    MarginRight = horizontal ? 35 : 1,
+                    MarginBottom = horizontal ? 2 : 18,
+                    AlignmentAxis = horizontal ? AlignmentAxis.Horizontal : AlignmentAxis.Vertical,
+                    MinValue = 0,
+                    MaxValue = 100
+                };
+
+                var bed = new Widget(parent.Context)
+                {
+                    WidthSizePolicy = horizontal ? SizePolicy.StretchToParent : SizePolicy.Fixed,
+                    HeightSizePolicy = horizontal ? SizePolicy.Fixed : SizePolicy.StretchToParent,
+                    SuggestedWidth = horizontal ? 0 : 3,
+                    SuggestedHeight = horizontal ? 3 : 0,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    DoNotAcceptEvents = true
+                };
+                if (parent.Context.SpriteData != null)
+                    bed.Sprite = parent.Context.SpriteData.GetSprite(horizontal
+                        ? "SPGeneral\\SPRecruitment\\slider_thin_bed_horizontal"
+                        : "SPGeneral\\SPRecruitment\\slider_thin_bed_vertical");
+                scrollbar.AddChild(bed);
+
+                var handle = new ImageWidget(parent.Context)
+                {
+                    WidthSizePolicy = SizePolicy.Fixed,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedWidth = horizontal ? 145 : 25,
+                    SuggestedHeight = horizontal ? 25 : 145,
+                    MinWidth = horizontal ? 90 : 0,
+                    MinHeight = horizontal ? 0 : 90,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Brush = parent.Context.GetBrush(horizontal
+                        ? "Encyclopedia.Scroll.Handle.Horizontal"
+                        : "Encyclopedia.Scroll.Handle.Vertical")
+                };
+                scrollbar.AddChild(handle);
+                scrollbar.Handle = handle;
+                return scrollbar;
+            }
+
+            private EncyclopediaUnitTreeNodeItemBrushWidget BuildVisualNode(FeudalTitle title)
+            {
+                var lineBrush = _body.Context.GetBrush("Encyclopedia.CharacterTree.Line");
+                var alternateLineBrush = _body.Context.GetBrush("Encyclopedia.CharacterTree.Line.Alternative");
+                bool nativeConnectors = _body.Context.SpriteData != null && lineBrush != null;
+                var node = new EncyclopediaUnitTreeNodeItemBrushWidget(_body.Context)
+                {
+                    Id = "CbTreeNode_" + (title.StringId ?? ""),
+                    WidthSizePolicy = SizePolicy.CoverChildren,
+                    HeightSizePolicy = SizePolicy.CoverChildren,
+                    MarginLeft = 10,
+                    MarginRight = 10
+                };
+                _nodeWidgets[title] = node;
+
+                var cardStack = new ListPanel(node.Context)
+                {
+                    WidthSizePolicy = SizePolicy.CoverChildren,
+                    HeightSizePolicy = SizePolicy.CoverChildren,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Top,
+                    StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.VerticalTopToBottom }
+                };
+                node.AddChild(cardStack);
+
+                var card = new ButtonWidget(node.Context)
+                {
+                    Id = "CbSelectTitle_" + (title.StringId ?? ""),
+                    WidthSizePolicy = SizePolicy.Fixed,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedWidth = 112,
+                    SuggestedHeight = 102,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Brush = node.Context.GetBrush("Encyclopedia.SubPage.Element"),
+                    UpdateChildrenStates = true,
+                    DoNotPassEventsToChildren = true
+                };
+                cardStack.AddChild(card);
+                card.ClickEventHandlers.Add(w => SelectTitle(title));
+
+                Hero owner = Owner(title) ?? (title.TitleType <= TitleType.Kingdom ? _realm.Leader : null);
+                DrawPortrait(card, owner);
+                DrawCrest(card, owner);
+
+                var nameBrush = new Brush
+                {
+                    Font = _caption.ReadOnlyBrush.Font,
+                    FontSize = 13,
+                    FontColor = Color.FromUint(0xE9E1D3FF),
+                    TextHorizontalAlignment = TaleWorlds.TwoDimension.TextHorizontalAlignment.Center,
+                    TextVerticalAlignment = TaleWorlds.TwoDimension.TextVerticalAlignment.Center
+                };
+                var name = new TextWidget(node.Context)
+                {
+                    WidthSizePolicy = SizePolicy.Fixed,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedWidth = 132,
+                    SuggestedHeight = 45,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Brush = nameBrush,
+                    Text = title.FullName?.ToString() ?? title.StringId ?? "Título",
+                    CanBreakWords = true,
+                    DoNotAcceptEvents = true
+                };
+                cardStack.AddChild(name);
+
+                var ownerBrush = new Brush
+                {
+                    Font = _caption.ReadOnlyBrush.Font,
+                    FontSize = 10,
+                    FontColor = Color.FromUint(0xBFB7AAFF),
+                    TextHorizontalAlignment = TaleWorlds.TwoDimension.TextHorizontalAlignment.Center,
+                    TextVerticalAlignment = TaleWorlds.TwoDimension.TextVerticalAlignment.Center
+                };
+                var holder = new TextWidget(node.Context)
+                {
+                    WidthSizePolicy = SizePolicy.Fixed,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedWidth = 132,
+                    SuggestedHeight = 20,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Brush = ownerBrush,
+                    Text = Owner(title)?.Name?.ToString() ?? "Vago",
+                    CanBreakWords = false,
+                    DoNotAcceptEvents = true
+                };
+                cardStack.AddChild(holder);
+
+                var lineContainer = new Widget(node.Context)
+                {
+                    Id = "LineContainer",
+                    WidthSizePolicy = SizePolicy.Fixed,
+                    HeightSizePolicy = SizePolicy.Fixed,
+                    SuggestedWidth = 0,
+                    SuggestedHeight = 20,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    MarginTop = 177,
+                    DoNotAcceptEvents = true,
+                    AlphaFactor = .72f
+                };
+                if (node.Context.SpriteData != null)
+                    lineContainer.Sprite = node.Context.SpriteData.GetSprite("BlankWhiteSquare_9");
+                node.AddChild(lineContainer);
+
+                var children = new ListPanel(node.Context)
+                {
+                    Id = "ChildContainer",
+                    WidthSizePolicy = SizePolicy.CoverChildren,
+                    HeightSizePolicy = SizePolicy.CoverChildren,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    MarginTop = 208,
+                    StackLayout = { LayoutMethod = TaleWorlds.GauntletUI.Layout.LayoutMethod.HorizontalLeftToRight }
+                };
+                node.AddChild(children);
+
+                if (nativeConnectors)
+                {
+                    node.LineBrush = lineBrush;
+                    node.AlternateLineBrush = alternateLineBrush ?? lineBrush;
+                    node.LineContainer = lineContainer;
+                    node.ChildContainer = children;
+                }
+
+                foreach (var child in _tree.ChildrenOf(title))
+                    children.AddChild(BuildVisualNode(child));
+
+                return node;
+            }
+
+            private void DrawRealmBanner(Widget parent)
+            {
+                if (_realm?.Banner == null) return;
+                try
+                {
+                    var id = new TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.BannerImageIdentifierVM(
+                        _realm.Banner, true);
+                    var banner = new MaskedTextureWidget(parent.Context)
+                    {
+                        WidthSizePolicy = SizePolicy.Fixed,
+                        HeightSizePolicy = SizePolicy.Fixed,
+                        SuggestedWidth = 44,
+                        SuggestedHeight = 44,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        MarginLeft = 7,
+                        MarginTop = 5,
+                        DoNotAcceptEvents = true,
+                        Brush = parent.Context.GetBrush("Flat.Tuple.Banner.Small.Hero"),
+                        ImageId = id.Id,
+                        AdditionalArgs = id.AdditionalArgs,
+                        TextureProviderName = id.TextureProviderName
+                    };
+                    parent.AddChild(banner);
+                }
+                catch (System.Exception ex)
+                {
+                    DebugLog.Log("[Hierarchy] Realm banner: " + ex.Message);
+                }
+            }
+
+            private void DrawPortrait(Widget card, Hero hero)
+            {
+                if (hero?.CharacterObject == null) return;
+                try
+                {
+                    if (!_portraits.TryGetValue(hero, out var id))
+                        _portraits[hero] = id =
+                            new TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.CharacterImageIdentifierVM(
+                                CharacterCode.CreateFrom(hero.CharacterObject));
+                    var portrait = new ImageIdentifierWidget(card.Context)
+                    {
+                        WidthSizePolicy = SizePolicy.Fixed,
+                        HeightSizePolicy = SizePolicy.Fixed,
+                        SuggestedWidth = 78,
+                        SuggestedHeight = 86,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        PositionXOffset = 7,
+                        PositionYOffset = 7,
+                        DoNotAcceptEvents = true,
+                        ImageId = id.Id,
+                        AdditionalArgs = id.AdditionalArgs,
+                        TextureProviderName = id.TextureProviderName
+                    };
+                    card.AddChild(portrait);
+                }
+                catch (System.Exception ex)
+                {
+                    DebugLog.Log("[Hierarchy] Portrait: " + ex.Message);
+                }
+            }
+
+            private void DrawCrest(Widget card, Hero owner)
+            {
+                if (owner?.Clan?.Banner == null) return;
+                try
+                {
+                    if (!_crests.TryGetValue(owner, out var id))
+                        _crests[owner] = id =
+                            new TaleWorlds.Core.ViewModelCollection.ImageIdentifiers.BannerImageIdentifierVM(
+                                owner.Clan.Banner, true);
+                    var crest = new MaskedTextureWidget(card.Context)
+                    {
+                        WidthSizePolicy = SizePolicy.Fixed,
+                        HeightSizePolicy = SizePolicy.Fixed,
+                        SuggestedWidth = 35,
+                        SuggestedHeight = 45,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top,
+                        PositionXOffset = 74,
+                        PositionYOffset = 7,
+                        DoNotAcceptEvents = true,
+                        Brush = card.Context.GetBrush("Flat.Tuple.Banner.Small.Hero"),
+                        ImageId = id.Id,
+                        AdditionalArgs = id.AdditionalArgs,
+                        TextureProviderName = id.TextureProviderName
+                    };
+                    card.AddChild(crest);
+                }
+                catch (System.Exception ex)
+                {
+                    DebugLog.Log("[Hierarchy] Crest: " + ex.Message);
+                }
+            }
+
             private void Details()
             {
                 if (_title == null) return;
