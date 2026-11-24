@@ -4,6 +4,12 @@
             WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
             MarginTop="188" MarginBottom="75">
       <Children>
+        <Widget Id="CbHierarchyInteractiveLayer"
+                WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
+                IsEnabled="@CanInteractHierarchy"
+                CanAcceptEvents="@CanInteractHierarchy"
+                UpdateChildrenStates="true">
+          <Children>
         <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent"
                      Brush="Standard.Background.Brush" DoNotAcceptEvents="true" />
 
@@ -263,6 +269,9 @@
             </ButtonWidget>
           </Children>
         </ListPanel>
+
+          </Children>
+        </Widget>
 
         <CBKingdomHierarchyDetails DataSource="{Details}" />
 

@@ -520,8 +520,13 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
   var detailsVmType=detailsVm.GetType();
   Require((bool)detailsVmType.GetProperty("IsOpen").GetValue(detailsVm),
     "Clicking a title should open the 3D details window");
+  Require(!(bool)hierarchyVmType.GetProperty("CanInteractHierarchy").GetValue(hierarchyVm),
+    "Opening details must disable hierarchy input");
   Require(detailsVmType.GetProperty("Character").PropertyType.Name=="HeroViewModel",
     "Only the details window should own the 3D HeroViewModel");
+  detailsVmType.GetMethod("ExecuteClose").Invoke(detailsVm,null);
+  Require((bool)hierarchyVmType.GetProperty("CanInteractHierarchy").GetValue(hierarchyVm),
+    "Closing details must restore hierarchy input");
   hierarchyVmType.GetMethod("ExecuteDeFacto").Invoke(hierarchyVm,null);
   Require((bool)hierarchyVmType.GetProperty("CanDeJure").GetValue(hierarchyVm),
     "De facto mode should enable return to de jure");
@@ -563,9 +568,9 @@ class Check { static Hero player; public static bool MainHero(ref Hero __result)
     detailsXml.SelectSingleNode("//*[@Command.Click='ExecuteClose']")!=null,
     "Details prefab must contain one 3D character and right-side title actions");
   Require(detailsXml.SelectSingleNode("//ButtonWidget[@Id='CbTitleDetailsModalBlocker'][@Command.Click='ExecuteClose']")!=null &&
-    detailsXml.SelectSingleNode("//ButtonWidget[@Id='CbTitleDetailsPanelBlocker']")!=null &&
-    detailsXml.SelectSingleNode("//Widget[@RenderLate='true']")!=null,
-    "Details popup must capture modal input instead of passing clicks to the tree");
+    detailsXml.SelectSingleNode("//Widget[@RenderLate='true']")!=null &&
+    hierarchyXml.SelectSingleNode("//Widget[@Id='CbHierarchyInteractiveLayer'][@CanAcceptEvents='@CanInteractHierarchy'][@IsEnabled='@CanInteractHierarchy']")!=null,
+    "Details popup must disable hierarchy input while modal is open");
   Require(hierarchyXml.SelectSingleNode("//CBKingdomHierarchyDetails[@DataSource='{Details}']")!=null,
     "Hierarchy prefab must host the title details window");
 

@@ -113,6 +113,9 @@ namespace CasusBelli.UI.Titles
         [DataSourceProperty]
         public bool HasSelection => _selectedTitle != null;
 
+        [DataSourceProperty]
+        public bool CanInteractHierarchy => !_details.IsOpen;
+
         public void ExecuteOpen()
         {
             Kingdom kingdom = _defaultKingdom();
@@ -241,6 +244,11 @@ namespace CasusBelli.UI.Titles
         {
             RefreshTree(false);
             if (title != null) _details.Open(title);
+        }
+
+        internal void NotifyDetailsStateChanged()
+        {
+            OnPropertyChanged(nameof(CanInteractHierarchy));
         }
 
         private void SetRealm(Kingdom kingdom, bool resetSelection)
@@ -562,11 +570,13 @@ namespace CasusBelli.UI.Titles
             _title = title;
             RefreshValuesForTitle();
             IsOpen = true;
+            _hierarchy.NotifyDetailsStateChanged();
         }
 
         internal void Close()
         {
             IsOpen = false;
+            _hierarchy.NotifyDetailsStateChanged();
         }
 
         public void ExecuteClose()
